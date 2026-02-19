@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listening Comprehension Test - Dr. Mazen Badawy</title>
+    <style>
+        :root {
+            --bg-color: #e0f2fe;
+            --primary-blue: #1e3a8a;
+            --accent-green: #16a34a;
+            --accent-red: #dc2626;
+            --card-bg: #ffffff;
+            --text-main: #000000;
+            --base-font-size: 20px;
+        }
+
+        * {
+            box-sizing: border-box;
+            transition: transform 0.2s ease;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: "Segoe UI", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-size: var(--base-font-size);
+            line-height: 1.3;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* --- Header & Navigation --- */
+        #top-interface {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: #f8fafc;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease-in-out;
+        }
+
+        #top-interface.hidden {
+            transform: translateY(-100%);
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 15px;
+            border-bottom: 1px solid #cbd5e1;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 5px;
+        }
+
+        .tab-btn {
+            background: #cbd5e1;
+            border: none;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-weight: bold;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+
+        .tab-btn.active {
+            background: var(--primary-blue);
+            color: white;
+        }
+
+        .zoom-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-btn {
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .audio-container {
+            width: 100%;
+            background: #ffffff;
+            padding: 5px 15px;
+            border-bottom: 2px solid var(--primary-blue);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: sticky;
+            top: 0;
+            z-index: 999;
+        }
+
+        audio {
+            width: 100%;
+            max-width: 800px;
+            height: 35px;
+        }
+
+        #toggle-controls {
+            position: fixed;
+            right: 15px;
+            top: 60px;
+            z-index: 1001;
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        #toggle-controls:hover {
+            opacity: 1;
+        }
+
+        /* --- Content Area --- */
+        .main-content {
+            padding: 20px;
+            max-width: 900px;
+            margin: 0 auto 80px auto;
+            flex-grow: 1;
+            width: 100%;
+        }
+
+        h1, h2 {
+            font-weight: 200;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .view-section {
+            display: none;
+        }
+
+        .view-section.active {
+            display: block;
+        }
+
+        /* --- Question Cards --- */
+        .question-card {
+            background: var(--card-bg);
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .question-card:hover {
+            transform: scale(1.01);
+        }
+
+        .question-text {
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+        }
+
+        .option-btn {
+            text-align: left;
+            padding: 10px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            background: #fdfdfd;
+            cursor: pointer;
+            font-size: 0.95em;
+            width: 100%;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            background: #f1f5f9;
+            border-color: var(--primary-blue);
+        }
+
+        .option-btn:disabled {
+            cursor: default;
+        }
+
+        /* Logic Colors */
+        .option-btn.correct {
+            background-color: var(--accent-green) !important;
+            color: white !important;
+            border-color: #14532d !important;
+        }
+
+        .option-btn.wrong {
+            background-color: var(--accent-red) !important;
+            color: white !important;
+            border-color: #7f1d1d !important;
+        }
+
+        /* --- Transcript Styles --- */
+        .transcript-container {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            white-space: pre-wrap;
+            border-left: 5px solid var(--primary-blue);
+        }
+
+        .speaker {
+            font-weight: bold;
+            color: var(--primary-blue);
+        }
+
+        /* --- Footer --- */
+        footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background: #1e293b;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            font-size: 14px;
+            z-index: 1000;
+        }
+
+        /* --- Responsive Settings --- */
+        @media (max-width: 600px) {
+            .top-bar {
+                flex-direction: column;
+                gap: 10px;
+            }
+            .main-content {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <button id="toggle-controls" onclick="toggleHeader()">HIDE/SHOW CONTROLS</button>
+
+    <div id="top-interface">
+        <div class="top-bar">
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('listening')">LISTENING TEST</button>
+                <button class="tab-btn" onclick="switchTab('transcript')">TRANSCRIPT</button>
+            </div>
+            <div class="zoom-controls">
+                <span>ZOOM:</span>
+                <button class="nav-btn" onclick="adjustZoom(-2)">-</button>
+                <button class="nav-btn" onclick="adjustZoom(2)">+</button>
+                <button class="nav-btn" onclick="resetZoom()">RESET</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="audio-container" id="sticky-audio">
+        <audio controls>
+            <source src="00.mp3" type="audio/mpeg">
+            Your browser does not support the audio element.
+        </audio>
+    </div>
+
+    <div class="main-content" id="scalable-area">
+        
+        <!-- Test Section -->
+        <section id="view-listening" class="view-section active">
+            <h2>Listening Questions</h2>
+            <div id="quiz-container">
+                <!-- Questions injected by JS -->
+            </div>
+        </section>
+
+        <!-- Transcript Section -->
+        <section id="view-transcript" class="view-section">
+            <h2>Conversation Transcript</h2>
+            <div class="transcript-container" id="transcript-content">
+                <!-- Transcript injected by JS -->
+            </div>
+        </section>
+
+    </div>
+
+    <footer>
+        All rights are reserved to Dr. Mazen Badawy – Doctorate of English Teaching & Testing
+    </footer>
+
+    <script>
+        // Data Configuration
+        const questions = [
+            { q: "1. Why must Speaker 1 simplify the presentation?", options: ["The audience lacks technical background", "The project is incomplete", "The system is outdated", "The budget is insufficient"], correct: 0 },
+            { q: "2. What should be avoided during the presentation?", options: ["Clear explanations", "Specialized technical jargon", "Visual comparison charts", "Real-life success stories"], correct: 1 },
+            { q: "3. What should Speaker 1 focus on instead of technical layers?", options: ["Internal code structure", "Hardware components", "What the system achieves", "Programming algorithms"], correct: 2 },
+            { q: "4. Decision-makers are mainly concerned with:", options: ["Mathematical formulas", "Coding syntax accuracy", "Software debugging steps", "Measurable business benefits"], correct: 3 },
+            { q: "5. Why are visual aids effective?", options: ["They replace verbal explanation entirely", "They communicate ideas more clearly", "They increase presentation length", "They remove the need for preparation"], correct: 1 },
+            { q: "6. What is a good example of a helpful visual?", options: ["A before-and-after comparison chart", "A long technical paragraph", "A complex algorithm diagram", "A detailed programming script"], correct: 0 },
+            { q: "7. Where should detailed technical data be placed?", options: ["In the main introduction", "In the appendix section", "On every presentation slide", "In unrelated documents"], correct: 1 },
+            { q: "8. How can Speaker 1 check understanding?", options: ["By speaking faster", "By avoiding audience contact", "By inviting clarification questions", "By skipping complex points"], correct: 2 },
+            { q: "9. Asking questions during the presentation makes it:", options: ["Shorter and faster", "More technical", "Less structured", "More engaging"], correct: 3 },
+            { q: "10. Storytelling helps because it makes ideas:", options: ["More abstract", "Relatable and memorable", "Highly technical", "More complicated"], correct: 1 },
+            { q: "11. Why should communication style be adapted?", options: ["Audiences differ in expertise", "Slides require decoration", "Engineers prefer marketing language", "Technical data must be removed"], correct: 0 },
+            { q: "12. A confident tone increases:", options: ["Technical difficulty", "Audience confusion", "Speaker credibility", "Slide complexity"], correct: 2 },
+            { q: "13. Instead of explaining architecture layers, Speaker 1 describes:", options: ["Code syntax rules", "Data security threats", "The system’s overall function", "Developer responsibilities"], correct: 2 },
+            { q: "14. Cost reduction is an example of a:", options: ["Programming function", "Technical component", "Hardware improvement", "Business benefit"], correct: 3 },
+            { q: "15. Audience confusion can be noticed by:", options: ["Positive feedback", "Clear understanding", "Observing reactions carefully", "Immediate agreement"], correct: 2 },
+            { q: "16. Presentations to engineers usually include:", options: ["Simplified analogies only", "Detailed technical terminology", "Marketing slogans", "Financial summaries"], correct: 1 },
+            { q: "17. Engagement during a presentation improves:", options: ["Decision-making confidence", "Coding accuracy", "Hardware performance", "Software design structure"], correct: 0 },
+            { q: "18. A simple diagram helps to:", options: ["Complicate explanations", "Replace interaction", "Increase text length", "Clarify workflow processes"], correct: 3 },
+            { q: "19. Why is flexibility in communication important?", options: ["It reduces preparation time", "It eliminates technical content", "It shows professionalism", "It increases slide numbers"], correct: 2 },
+            { q: "20. Stakeholders feel confident when:", options: ["Information is clear and structured", "Details are extremely technical", "Explanations are rushed", "Slides contain excessive data"], correct: 0 },
+            { q: "21. Productivity gains are considered:", options: ["Technical limitations", "Business outcomes", "Coding challenges", "Hardware failures"], correct: 1 },
+            { q: "22. The main goal of the presentation is to:", options: ["Demonstrate coding skills", "Teach engineering theory", "Impress technical staff", "Support informed decisions"], correct: 3 },
+            { q: "23. Simplifying language does NOT mean:", options: ["Reducing accuracy", "Adjusting to audience level", "Improving clarity", "Avoiding jargon"], correct: 0 },
+            { q: "24. Comparison charts help by:", options: ["Increasing audience confusion", "Removing explanation", "Showing improvement clearly", "Adding technical complexity"], correct: 2 },
+            { q: "25. Inviting questions encourages:", options: ["Passive listening", "Audience participation", "Slide reduction", "Technical specialization"], correct: 1 },
+            { q: "26. A non-technical audience prefers focus on:", options: ["Internal system coding", "Algorithm formulas", "Circuit diagrams", "Results and impact"], correct: 3 },
+            { q: "27. Clear explanations reduce:", options: ["Understanding", "Professional image", "Misinterpretation", "Audience attention"], correct: 2 },
+            { q: "28. Preparing detailed backup information shows:", options: ["Lack of clarity", "Overconfidence", "Poor organization", "Thorough preparation"], correct: 3 },
+            { q: "29. Adapting tone means speaking in a way that is:", options: ["Highly technical always", "Audience-centered and clear", "Extremely brief only", "Financially detailed only"], correct: 1 },
+            { q: "30. Overall, successful technical presentations require:", options: ["Complex terminology", "Long explanations", "Ignoring audience feedback", "Clarity, benefits, and engagement"], correct: 3 }
+        ];
+
+        const transcriptText = `
+<span class="speaker">Speaker 1:</span> I have to present our new system upgrade to the board of directors next week, and most of them come from financial and marketing backgrounds rather than engineering.
+
+<span class="speaker">Speaker 2:</span> In that case, simplifying your technical language is essential. Avoid specialized terminology and replace it with clear, everyday expressions.
+
+<span class="speaker">Speaker 1:</span> Instead of explaining the architecture layer by layer, I could describe the system as a structure that organizes data securely and efficiently.
+
+<span class="speaker">Speaker 2:</span> That’s a good approach. Focus on what the system achieves rather than how every technical component functions internally.
+
+<span class="speaker">Speaker 1:</span> I also plan to explain how the upgrade reduces operational costs and improves response time for customers.
+
+<span class="speaker">Speaker 2:</span> Excellent. Decision-makers are usually concerned with measurable benefits like cost efficiency, productivity gains, and customer satisfaction.
+
+<span class="speaker">Speaker 1:</span> I’m preparing visual slides with simple diagrams and comparison charts.
+
+<span class="speaker">Speaker 2:</span> Visual aids are powerful tools. A before-and-after chart can clearly demonstrate improvement without overwhelming the audience.
+
+<span class="speaker">Speaker 1:</span> Should I include technical data in the appendix in case someone asks?
+
+<span class="speaker">Speaker 2:</span> Yes, that’s wise. Keep the main presentation simple, but have detailed information ready if needed.
+
+<span class="speaker">Speaker 1:</span> Sometimes I struggle to judge whether the audience is following my explanation.
+
+<span class="speaker">Speaker 2:</span> You can pause periodically and invite questions. Asking, “Would you like me to explain that further?” encourages participation.
+
+<span class="speaker">Speaker 1:</span> That would also make the session more engaging rather than one-sided.
+
+<span class="speaker">Speaker 2:</span> Exactly. Interaction keeps attention high and ensures understanding.
+
+<span class="speaker">Speaker 1:</span> I also think storytelling might help. For example, describing a real client who benefited from the system.
+
+<span class="speaker">Speaker 2:</span> Storytelling is very effective. It makes abstract technical ideas relatable and memorable.
+
+<span class="speaker">Speaker 1:</span> Another challenge is adjusting my tone. I usually speak in detailed technical terms when talking to engineers.
+
+<span class="speaker">Speaker 2:</span> When presenting to non-technical stakeholders, your tone should be clear, confident, and outcome-oriented rather than highly technical.
+
+<span class="speaker">Speaker 1:</span> So I should adapt my communication style based on the audience’s expertise and expectations.
+
+<span class="speaker">Speaker 2:</span> Absolutely. Flexibility in communication shows professionalism and improves credibility.
+
+<span class="speaker">Speaker 1:</span> I’ll focus on clarity, visuals, benefits, engagement, and adaptability.
+
+<span class="speaker">Speaker 2:</span> That’s the right strategy. When technical ideas are presented clearly, stakeholders feel informed, confident, and ready to support the project.`;
+
+        // State Management
+        let currentZoom = 20;
+
+        // Initialization
+        window.onload = () => {
+            renderQuestions();
+            document.getElementById('transcript-content').innerHTML = transcriptText;
+        };
+
+        function renderQuestions() {
+            const container = document.getElementById('quiz-container');
+            questions.forEach((item, qIdx) => {
+                const card = document.createElement('div');
+                card.className = 'question-card';
+                
+                const qText = document.createElement('span');
+                qText.className = 'question-text';
+                qText.innerText = item.q;
+                card.appendChild(qText);
+
+                const optionsDiv = document.createElement('div');
+                optionsDiv.className = 'options-grid';
+
+                item.options.forEach((opt, oIdx) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'option-btn';
+                    btn.innerText = opt;
+                    btn.onclick = () => handleAnswer(qIdx, oIdx, item.correct, optionsDiv);
+                    optionsDiv.appendChild(btn);
+                });
+
+                card.appendChild(optionsDiv);
+                container.appendChild(card);
+            });
+        }
+
+        function handleAnswer(qIdx, selectedIdx, correctIdx, optionsContainer) {
+            const buttons = optionsContainer.querySelectorAll('.option-btn');
+            
+            buttons.forEach((btn, idx) => {
+                btn.disabled = true; // Disable single attempt
+                if (idx === correctIdx) {
+                    btn.classList.add('correct');
+                } else if (idx === selectedIdx) {
+                    btn.classList.add('wrong');
+                }
+            });
+        }
+
+        // Navigation
+        function switchTab(tabId) {
+            document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            
+            document.getElementById(`view-${tabId}`).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+
+        function toggleHeader() {
+            const header = document.getElementById('top-interface');
+            const btn = document.getElementById('toggle-controls');
+            header.classList.toggle('hidden');
+            
+            if (header.classList.contains('hidden')) {
+                btn.style.top = '10px';
+                btn.innerText = "SHOW CONTROLS";
+            } else {
+                btn.style.top = '60px';
+                btn.innerText = "HIDE CONTROLS";
+            }
+        }
+
+        // Zoom Logic
+        function adjustZoom(delta) {
+            currentZoom += delta;
+            if (currentZoom < 12) currentZoom = 12;
+            if (currentZoom > 40) currentZoom = 40;
+            document.getElementById('scalable-area').style.fontSize = currentZoom + 'px';
+        }
+
+        function resetZoom() {
+            currentZoom = 20;
+            document.getElementById('scalable-area').style.fontSize = '20px';
+        }
+    </script>
+</body>
+</html>

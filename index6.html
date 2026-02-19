@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listening Comprehension Test</title>
+    <style>
+        /* CSS Variables for easy scaling */
+        :root {
+            --base-font-size: 20px;
+            --bg-color: #e0f2fe;
+            --card-bg: #ffffff;
+            --primary-blue: #1e3a8a;
+            --correct-green: #16a34a;
+            --wrong-red: #dc2626;
+            --text-black: #000000;
+        }
+
+        * {
+            box-sizing: border-box;
+            transition: font-size 0.2s ease;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: "Segoe UI", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-black);
+            line-height: 1.3;
+            font-size: var(--base-font-size);
+            padding-bottom: 80px; /* Space for fixed footer */
+        }
+
+        /* Header Layout */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background-color: var(--bg-color);
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: var(--primary-blue);
+            color: white;
+            padding: 5px 15px;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .top-bar.hidden {
+            transform: translateY(-100%);
+            position: absolute;
+            width: 100%;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+        }
+
+        .tab-btn {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid white;
+            color: white;
+            padding: 5px 15px;
+            cursor: pointer;
+            font-size: 0.9em;
+            text-transform: uppercase;
+        }
+
+        .tab-btn.active {
+            background: white;
+            color: var(--primary-blue);
+            font-weight: bold;
+        }
+
+        .zoom-controls {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+        }
+
+        .zoom-btn {
+            background: white;
+            border: none;
+            color: var(--primary-blue);
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            font-weight: bold;
+            border-radius: 4px;
+        }
+
+        .toggle-btn {
+            background: #334155;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 0.7em;
+            text-transform: uppercase;
+        }
+
+        /* Floating Audio Bar */
+        .audio-bar {
+            width: 100%;
+            background: #f8fafc;
+            border-bottom: 2px solid var(--primary-blue);
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        audio {
+            width: 90%;
+            max-width: 800px;
+            height: 35px;
+        }
+
+        /* Content Area */
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 0 15px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        h1 {
+            text-align: center;
+            font-weight: 200;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+        }
+
+        /* Question Cards */
+        .question-card {
+            background: var(--card-bg);
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            padding: 12px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: transform 0.2s ease;
+        }
+
+        .question-card:hover {
+            transform: scale(1.01);
+        }
+
+        .question-text {
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .option-btn {
+            text-align: left;
+            padding: 8px 12px;
+            border: 1px solid #e2e8f0;
+            background: #fdfdfd;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 0.95em;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            background: #f1f5f9;
+        }
+
+        .option-btn:disabled {
+            cursor: default;
+        }
+
+        /* Feedback Classes */
+        .btn-correct {
+            background-color: var(--correct-green) !important;
+            color: white !important;
+            border-color: var(--correct-green) !important;
+        }
+
+        .btn-wrong {
+            background-color: var(--wrong-red) !important;
+            color: white !important;
+            border-color: var(--wrong-red) !important;
+        }
+
+        /* Transcript Styling */
+        .transcript-box {
+            background: white;
+            padding: 25px;
+            border-radius: 4px;
+            border: 1px solid #cbd5e1;
+            white-space: pre-line;
+            line-height: 1.5;
+        }
+
+        /* Footer */
+        footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background: #1e293b;
+            color: #cbd5e1;
+            text-align: center;
+            padding: 10px;
+            font-size: 14px;
+            border-top: 2px solid var(--primary-blue);
+        }
+
+        @media (max-width: 600px) {
+            .options-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header id="mainHeader">
+        <div class="top-bar" id="topBar">
+            <div class="nav-tabs">
+                <button class="tab-btn active" onclick="switchTab('test')">Listening Test</button>
+                <button class="tab-btn" onclick="switchTab('transcript')">Transcript</button>
+            </div>
+            <div class="zoom-controls">
+                <button class="zoom-btn" onclick="adjustZoom(-2)">-</button>
+                <button class="zoom-btn" onclick="adjustZoom(2)">+</button>
+                <button class="toggle-btn" onclick="toggleHeader()">Hide Controls</button>
+            </div>
+        </div>
+        <div class="audio-bar">
+            <audio controls src="00.mp3">
+                Your browser does not support the audio element.
+            </audio>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- TEST TAB -->
+        <div id="test-content" class="tab-content active">
+            <h1>Listening Comprehension</h1>
+            <div id="quiz-container">
+                <!-- Questions injected by JS -->
+            </div>
+        </div>
+
+        <!-- TRANSCRIPT TAB -->
+        <div id="transcript-content" class="tab-content">
+            <h1>Audio Transcript</h1>
+            <div class="transcript-box">
+                <strong>Speaker 1:</strong> In our sustainability seminar, we were asked to discuss the role of engineers in protecting the environment. I truly believe this is one of the most important responsibilities engineers have today.
+                <strong>Speaker 2:</strong> I completely agree. Engineers are at the center of designing systems and technologies that reduce pollution, conserve energy, and protect natural resources. Without engineering solutions, many environmental problems would remain unsolved.
+                <strong>Speaker 1:</strong> That’s right. As engineers, we have a professional and ethical responsibility to address major environmental challenges such as climate change, air and water pollution, and the depletion of natural resources.
+                <strong>Speaker 2:</strong> Yes, these are global concerns that affect every country. Engineers can apply scientific knowledge and technical skills to develop practical and innovative solutions.
+                <strong>Speaker 1:</strong> One important contribution is designing sustainable infrastructure. For example, renewable energy systems like solar and wind power reduce dependence on fossil fuels.
+                <strong>Speaker 2:</strong> Absolutely. Energy-efficient buildings are another example. Smart designs can significantly lower electricity consumption and reduce greenhouse gas emissions.
+                <strong>Speaker 1:</strong> Engineers are also developing advanced technologies to reduce industrial pollution, improve recycling processes, and promote efficient energy use.
+                <strong>Speaker 2:</strong> That’s true. Waste management systems, for instance, help recycle materials and minimize environmental damage.
+                <strong>Speaker 1:</strong> Besides technical solutions, engineers can also educate the public. Raising awareness about sustainability encourages people to adopt environmentally friendly habits.
+                <strong>Speaker 2:</strong> Exactly. When public awareness is combined with effective technology, the results can be powerful and long-lasting.
+                <strong>Speaker 1:</strong> Can you provide some specific examples of engineering projects that support environmental protection?
+                <strong>Speaker 2:</strong> Certainly. Engineers are constructing wind and solar power plants, designing electric vehicles to reduce emissions, and developing water purification systems to ensure clean drinking water.
+                <strong>Speaker 1:</strong> That’s impressive. These efforts clearly demonstrate how engineering improves both environmental quality and human well-being.
+                <strong>Speaker 2:</strong> Absolutely. By facing environmental challenges directly, engineers contribute not only to technological advancement but also to building a healthier and more sustainable world for future generations.
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        All rights are reserved to Dr. Mazen Badawy – Doctorate of English Teaching & Testing
+    </footer>
+
+    <script>
+        const questions = [
+            { q: "What was the main topic of the seminar?", o: ["The role of engineers in environmental protection", "Financial strategies for engineering firms", "Advances in computer programming", "Marketing renewable products"], a: 0 },
+            { q: "Why do engineers play a key role in sustainability?", o: ["They reduce company expenses", "They design systems that reduce pollution", "They control government policies", "They manage natural disasters directly"], a: 1 },
+            { q: "What responsibility do engineers have?", o: ["To increase industrial production", "To ignore global problems", "To address environmental challenges", "To focus only on profits"], a: 2 },
+            { q: "Which global issue is mentioned in the dialogue?", o: ["Population growth", "Urban expansion", "Space exploration", "Climate change"], a: 3 },
+            { q: "What type of infrastructure is highlighted?", o: ["Military facilities", "Luxury housing projects", "Sustainable infrastructure", "Commercial shopping centers"], a: 2 },
+            { q: "What do renewable energy systems reduce?", o: ["Fossil fuel dependence", "Educational opportunities", "Transportation costs", "Internet usage"], a: 0 },
+            { q: "What is a benefit of energy-efficient buildings?", o: ["Increased fuel use", "Lower electricity consumption", "Higher maintenance costs", "Reduced construction quality"], a: 1 },
+            { q: "What helps minimize environmental damage?", o: ["Waste management systems", "Expanding factories", "Increasing fuel exports", "Reducing public awareness"], a: 0 },
+            { q: "Why is public education important?", o: ["It replaces technology", "It increases pollution", "It encourages sustainable habits", "It reduces engineering work"], a: 2 },
+            { q: "What leads to powerful environmental results?", o: ["Technology without awareness", "Awareness combined with technology", "Government control alone", "Private companies only"], a: 1 },
+            { q: "What type of power plants are engineers building?", o: ["Coal-powered plants", "Nuclear-only facilities", "Gas-based stations", "Wind and solar plants"], a: 3 },
+            { q: "Why are electric vehicles important?", o: ["They increase emissions", "They reduce harmful gases", "They consume more fuel", "They replace public transport"], a: 1 },
+            { q: "What ensures clean drinking water?", o: ["Oil filtration systems", "Solar batteries", "Water purification systems", "Traffic control systems"], a: 2 },
+            { q: "How does engineering improve quality of life?", o: ["By increasing consumption", "By ignoring pollution", "By limiting innovation", "By protecting the environment"], a: 3 },
+            { q: "What do engineers use to create solutions?", o: ["Technical skills and knowledge", "Political influence", "Advertising strategies", "Financial speculation"], a: 0 },
+            { q: "What do recycling processes promote?", o: ["Resource waste", "Energy loss", "Efficient material use", "Industrial pollution"], a: 2 },
+            { q: "Why are environmental challenges global?", o: ["They affect all countries", "They concern engineers only", "They impact one industry", "They are temporary problems"], a: 0 },
+            { q: "What reduces greenhouse gas emissions?", o: ["Fossil fuel plants", "Industrial expansion", "Energy-efficient designs", "Increased transportation"], a: 2 },
+            { q: "What ethical duty do engineers have?", o: ["To maximize profits", "To protect natural resources", "To increase production", "To limit innovation"], a: 1 },
+            { q: "What promotes sustainable daily choices?", o: ["Strict government fines", "Public awareness", "Private investments", "Industrial growth"], a: 1 },
+            { q: "What happens when awareness increases?", o: ["Pollution automatically stops", "Technology becomes unnecessary", "Real environmental change occurs", "Engineering loses importance"], a: 2 },
+            { q: "What reduces dependence on fossil fuels?", o: ["Renewable energy systems", "Industrial expansion", "Higher electricity prices", "Oil exploration"], a: 0 },
+            { q: "What is one example of environmental engineering work?", o: ["Luxury hotel design", "Shopping mall construction", "Entertainment software", "Water purification development"], a: 3 },
+            { q: "What improves both environment and well-being?", o: ["Increased industrial waste", "Reduced environmental effort", "Sustainable engineering solutions", "Expanded fossil fuel usage"], a: 2 },
+            { q: "What is a result of smart building design?", o: ["Higher energy waste", "Greater fuel consumption", "Increased pollution", "Lower electricity use"], a: 3 },
+            { q: "What supports long-term sustainability?", o: ["Temporary solutions", "Public ignorance", "Innovative engineering projects", "Increased resource depletion"], a: 2 },
+            { q: "What is reduced by pollution-control technologies?", o: ["Public awareness", "Industrial production", "Environmental damage", "Technological progress"], a: 2 },
+            { q: "What do engineers contribute besides technology?", o: ["Political leadership", "A healthier world", "Financial control", "Media influence"], a: 1 },
+            { q: "What is necessary to solve environmental problems?", o: ["Ignoring scientific evidence", "Limiting education", "Avoiding cooperation", "Practical engineering solutions"], a: 3 },
+            { q: "What is the overall message of the discussion?", o: ["Engineers have little environmental impact", "Sustainability is optional", "Environmental protection requires engineering responsibility", "Technology harms the environment"], a: 2 }
+        ];
+
+        let currentFontSize = 20;
+
+        function initQuiz() {
+            const container = document.getElementById('quiz-container');
+            questions.forEach((item, qIndex) => {
+                const card = document.createElement('div');
+                card.className = 'question-card';
+                card.id = `q-card-${qIndex}`;
+
+                const qText = document.createElement('div');
+                qText.className = 'question-text';
+                qText.innerText = `${qIndex + 1}. ${item.q}`;
+                card.appendChild(qText);
+
+                const grid = document.createElement('div');
+                grid.className = 'options-grid';
+
+                item.o.forEach((opt, oIndex) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'option-btn';
+                    btn.innerText = `${String.fromCharCode(65 + oIndex)}. ${opt}`;
+                    btn.onclick = () => checkAnswer(qIndex, oIndex, item.a);
+                    grid.appendChild(btn);
+                });
+
+                card.appendChild(grid);
+                container.appendChild(card);
+            });
+        }
+
+        function checkAnswer(qIndex, selectedIndex, correctIndex) {
+            const card = document.getElementById(`q-card-${qIndex}`);
+            const buttons = card.querySelectorAll('.option-btn');
+            
+            buttons.forEach((btn, idx) => {
+                btn.disabled = true;
+                if (idx === correctIndex) {
+                    btn.classList.add('btn-correct');
+                } else if (idx === selectedIndex) {
+                    btn.classList.add('btn-wrong');
+                }
+            });
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            
+            document.getElementById(`${tabId}-content`).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+
+        function adjustZoom(amount) {
+            currentFontSize += amount;
+            if (currentFontSize < 12) currentFontSize = 12;
+            if (currentFontSize > 40) currentFontSize = 40;
+            document.documentElement.style.setProperty('--base-font-size', currentFontSize + 'px');
+        }
+
+        function toggleHeader() {
+            const topBar = document.getElementById('topBar');
+            const toggleBtn = document.querySelector('.toggle-btn');
+            
+            if (topBar.classList.contains('hidden')) {
+                topBar.classList.remove('hidden');
+                toggleBtn.innerText = "Hide Controls";
+            } else {
+                topBar.classList.add('hidden');
+                toggleBtn.innerText = "Show Controls";
+            }
+        }
+
+        // Initialize on load
+        window.onload = initQuiz;
+    </script>
+</body>
+</html>

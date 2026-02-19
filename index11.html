@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listening Comprehension Test</title>
+    <style>
+        /* CSS Reset & Variables */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "Segoe UI", Arial, sans-serif;
+            background-color: #e0f2fe; /* Light Blue Background */
+            color: #000;
+            line-height: 1.3;
+            font-size: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Hover Scale Transition */
+        .hover-scale {
+            transition: transform 0.2s ease-in-out;
+        }
+        .hover-scale:hover {
+            transform: scale(1.02);
+        }
+
+        /* Header & Control Bar Interface */
+        #header-container {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            width: 100%;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        #top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px 15px;
+            background: #f8fafc;
+            border-bottom: 1px solid #cbd5e1;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        #top-bar.hidden {
+            transform: translateY(-100%);
+            position: absolute;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 5px;
+        }
+
+        .tab-btn {
+            background: #1e3a8a; /* Dark Blue */
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            cursor: pointer;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.8em;
+        }
+
+        .tab-btn.active {
+            background: #16a34a; /* Green for Active */
+        }
+
+        .controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .zoom-btn, .toggle-btn {
+            background: #1e3a8a;
+            color: white;
+            border: none;
+            padding: 5px 12px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .toggle-btn {
+            background: #64748b;
+        }
+
+        /* Floating Audio Bar */
+        #audio-bar {
+            width: 100%;
+            padding: 5px 15px;
+            background: #fff;
+            border-bottom: 2px solid #1e3a8a;
+            display: flex;
+            justify-content: center;
+        }
+
+        audio {
+            width: 100%;
+            max-width: 800px;
+            height: 35px;
+        }
+
+        /* Layout Content */
+        main {
+            flex: 1;
+            padding: 10px 15px;
+            max-width: 900px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .page-content {
+            display: none;
+        }
+
+        .page-content.active {
+            display: block;
+        }
+
+        h1 {
+            font-weight: 100; /* Thin Header */
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            margin: 10px 0;
+            text-align: center;
+            font-size: 1.4em;
+        }
+
+        /* Question Cards (Compact) */
+        .question-card {
+            background: white;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            padding: 10px;
+            margin-bottom: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .question-text {
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 4px;
+        }
+
+        .option-btn {
+            text-align: left;
+            padding: 6px 12px;
+            border: 1px solid #e2e8f0;
+            background: #fdfdfd;
+            cursor: pointer;
+            font-size: 0.95em;
+            width: 100%;
+            border-radius: 4px;
+            color: black;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            background: #f1f5f9;
+        }
+
+        /* MCQ Feedback */
+        .option-btn.correct {
+            background-color: #16a34a !important; /* Green */
+            color: white !important;
+            border-color: #15803d;
+        }
+
+        .option-btn.wrong {
+            background-color: #dc2626 !important; /* Red */
+            color: white !important;
+            border-color: #b91c1c;
+        }
+
+        /* Transcript Area */
+        #transcript-content {
+            background: white;
+            padding: 20px;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            white-space: pre-line;
+            border: 1px solid #cbd5e1;
+        }
+
+        .speaker {
+            font-weight: bold;
+            color: #1e3a8a;
+        }
+
+        /* Footer */
+        footer {
+            background: #1e3a8a;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            font-size: 14px;
+            width: 100%;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="header-container">
+        <div id="top-bar">
+            <div class="nav-tabs">
+                <button class="tab-btn active" onclick="showTab('test')">Listening Test</button>
+                <button class="tab-btn" onclick="showTab('transcript')">Transcript</button>
+            </div>
+            <div class="controls">
+                <button class="zoom-btn" onclick="adjustZoom(-2)">A-</button>
+                <button class="zoom-btn" onclick="adjustZoom(2)">A+</button>
+                <button class="toggle-btn" onclick="toggleHeader()">Hide Controls</button>
+            </div>
+        </div>
+        <div id="audio-bar">
+            <audio controls src="00.mp3">
+                Your browser does not support audio.
+            </audio>
+        </div>
+    </div>
+
+    <main id="main-content">
+        <section id="test-page" class="page-content active">
+            <h1>Making Suggestions</h1>
+            <div id="quiz-container"></div>
+        </section>
+
+        <section id="transcript-page" class="page-content">
+            <h1>Conversation Transcript</h1>
+            <div id="transcript-content">
+                <span class="speaker">Speaker 1:</span> In our team meeting today, we were asked to practice giving suggestions. I think this is really important for engineers.
+                <span class="speaker">Speaker 2:</span> I agree. Good suggestions are specific, constructive, and respectful. They help the team improve without causing conflicts and encourage collaboration.
+                <span class="speaker">Speaker 1:</span> For example, if someone’s code could be improved, we could say: “I noticed that you've been using a lot of loops in your code. You could improve the performance of your code by using recursion instead.”
+                <span class="speaker">Speaker 2:</span> That’s a great example. It’s clear, shows the benefit, and doesn’t sound like criticism. The focus is on improvement rather than fault-finding.
+                <span class="speaker">Speaker 1:</span> Another case is suggesting a new approach to a project. I might say: “I think we could improve our efficiency by changing our workflow. Here’s a suggestion for a new approach…”
+                <span class="speaker">Speaker 2:</span> Exactly. Being constructive means offering solutions rather than just pointing out problems. It encourages collaboration and creativity, which can lead to better project outcomes.
+                <span class="speaker">Speaker 1:</span> We can also suggest new projects: “I've been thinking about a new project that we could work on. I think it has the potential to be very successful. Here's my idea…”
+                <span class="speaker">Speaker 2:</span> Yes, and it’s important to remain respectful and open to feedback. If the team doesn’t accept the suggestion, we should listen to their reasons and consider their perspective. That way, everyone feels heard.
+                <span class="speaker">Speaker 1:</span> Timing is also important. We should make suggestions when the team is ready to discuss improvements, not during stressful deadlines or critical phases.
+                <span class="speaker">Speaker 2:</span> True. And framing suggestions positively matters. Phrases like “Perhaps we could try…” or “How about considering…” make the suggestion collaborative rather than critical.
+                <span class="speaker">Speaker 1:</span> I also think giving examples helps. For instance, if suggesting a workflow change, showing how it saved time in a similar project can make the idea more persuasive.
+                <span class="speaker">Speaker 2:</span> Absolutely. Examples, evidence, and benefits strengthen suggestions and show that they are practical, not just theoretical ideas.
+                <span class="speaker">Speaker 1:</span> So overall, giving good suggestions requires clarity, respect, constructiveness, awareness of timing and tone, and sometimes supporting evidence.
+                <span class="speaker">Speaker 2:</span> Exactly. Mastering this skill improves productivity, teamwork, and can even inspire innovations that benefit the company and clients.
+                <span class="speaker">Speaker 1:</span> And practicing this regularly in meetings makes it natural for engineers to share ideas and contribute to team growth.
+                <span class="speaker">Speaker 2:</span> Yes, it becomes part of a positive company culture where continuous improvement and collaboration are valued.
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        All rights are reserved to Dr. Mazen Badawy – Doctorate of English Teaching & Testing
+    </footer>
+
+    <script>
+        /**
+         * UPDATED NON-SYSTEMATIC DISTRIBUTION (30 Questions):
+         * A: 8 correct
+         * B: 8 correct
+         * C: 7 correct
+         * D: 7 correct
+         */
+        const questions = [
+            { q: "What is the main topic of the conversation?", options: ["Planning team meetings efficiently", "Making suggestions in a company context", "Writing project reports professionally", "Evaluating employee performance"], correct: 1 }, // B
+            { q: "Good suggestions should be:", options: ["Specific, constructive, and respectful", "Vague, critical, and urgent", "Personal, casual, and informal", "Aggressive, forceful, and commanding"], correct: 0 }, // A
+            { q: "The focus of a suggestion about code improvement should be:", options: ["Criticism only", "Personal preferences", "Ignoring the problem", "Improvement and benefits"], correct: 3 }, // D
+            { q: "Constructive suggestions provide:", options: ["Criticism without alternatives", "Unclear instructions", "Solutions rather than just problems", "Strict orders"], correct: 2 }, // C
+            { q: "Suggesting a new project should be:", options: ["Clear, positive, and open", "Aggressive and forceful", "Casual and informal", "Vague and ambiguous"], correct: 0 }, // A
+            { q: "Listening to feedback after making a suggestion shows:", options: ["Disrespect and weakness", "Professionalism and openness", "Avoidance of responsibility", "Confusion about ideas"], correct: 1 }, // B
+            { q: "Key points of making suggestions include:", options: ["Being vague, informal, and casual", "Being strict, forceful, and critical", "Ignoring feedback and criticism", "Being specific, explaining benefits, respecting opinions"], correct: 3 }, // D
+            { q: "The phrase “Perhaps we could try…” is used to:", options: ["Suggest improvements politely", "Give strict instructions", "Complain about mistakes", "End discussions abruptly"], correct: 0 }, // A
+            { q: "Timing in giving suggestions is important because:", options: ["Suggestions should be made during stressful deadlines", "Timing does not matter", "Proper timing ensures receptiveness and impact", "Immediate feedback is always negative"], correct: 2 }, // C
+            { q: "Positive framing of suggestions helps:", options: ["Increase conflict", "Encourage collaboration", "Avoid participation", "Delay project completion"], correct: 1 }, // B
+            { q: "Using examples when suggesting ideas:", options: ["Confuses the team", "Reduces clarity", "Avoids responsibility", "Makes suggestions more persuasive"], correct: 3 }, // D
+            { q: "Respect in making suggestions involves:", options: ["Considering other opinions", "Ignoring feedback", "Forcing your idea", "Criticizing the person"], correct: 0 }, // A
+            { q: "Constructive suggestions focus on:", options: ["Providing solutions and benefits", "Pointing out problems only", "Ignoring team needs", "Avoiding collaboration"], correct: 0 }, // A
+            { q: "Feedback from the team is important because it:", options: ["Shows weakness", "Should be ignored", "Helps refine and improve suggestions", "Reduces idea quality"], correct: 2 }, // C
+            { q: "Framing suggestions positively ensures:", options: ["Confusion among colleagues", "Collaborative and respectful communication", "Criticism without alternatives", "Aggression or forcefulness"], correct: 1 }, // B
+            { q: "A suggestion about workflow improvement should:", options: ["Ignore the team’s opinions", "Use unclear instructions", "Focus only on problems", "Include practical examples and benefits"], correct: 3 }, // D
+            { q: "Good timing for suggestions avoids:", options: ["Collaboration", "Stressful moments that reduce receptiveness", "Participation", "Productivity"], correct: 1 }, // B
+            { q: "Clear and specific suggestions are better than:", options: ["Respectful proposals", "Vague and general suggestions", "Constructive ideas", "Helpful feedback"], correct: 1 }, // B
+            { q: "Being open to feedback ensures:", options: ["Suggestions are refined and accepted", "Suggestions are ignored", "Conflicts increase", "Ideas fail immediately"], correct: 0 }, // A
+            { q: "Practicing suggestions regularly helps:", options: ["Reduce participation", "Increase confusion", "Make idea-sharing natural in meetings", "Delay decision-making"], correct: 2 }, // C
+            { q: "Mastering suggestions can improve:", options: ["Miscommunication", "Productivity and teamwork", "Conflicts", "Individual isolation"], correct: 1 }, // B
+            { q: "Using respectful phrases like “How about considering…” shows:", options: ["Aggression", "Urgency", "Politeness and collaboration", "Criticism"], correct: 2 }, // C
+            { q: "Suggesting new projects respectfully:", options: ["Encourages innovation", "Reduces team involvement", "Confuses colleagues", "Avoids accountability"], correct: 0 }, // A
+            { q: "Clear suggestions often include:", options: ["Vague instructions", "Benefits, evidence, and specific ideas", "Criticism only", "Confusing jargon"], correct: 1 }, // B
+            { q: "Ignoring timing when giving suggestions may:", options: ["Improve collaboration", "Increase enthusiasm", "Reduce effectiveness", "Encourage innovation"], correct: 2 }, // C
+            { q: "A suggestion is constructive when it:", options: ["Offers a solution rather than just a problem", "Criticizes without alternatives", "Ignores collaboration", "Creates conflicts"], correct: 0 }, // A
+            { q: "The tone of a suggestion should be:", options: ["Forceful and critical", "Casual and ambiguous", "Positive and collaborative", "Aggressive and commanding"], correct: 2 }, // C
+            { q: "Mastering suggestion skills contributes to:", options: ["Miscommunication", "Individual conflicts", "Positive company culture", "Increased tension"], correct: 2 }, // C
+            { q: "Including evidence or examples in a suggestion:", options: ["Weakens the idea", "Reduces clarity", "Strengthens its persuasiveness", "Creates misunderstanding"], correct: 2 }, // C
+            { q: "Overall, giving good suggestions requires:", options: ["Aggression, criticism, and forcefulness", "Vagueness and casual language", "Ignoring team feedback", "Clarity, respect, constructiveness, and awareness of timing and tone"], correct: 3 }  // D
+        ];
+
+        let currentFontSize = 20;
+        let isHeaderHidden = false;
+
+        function initQuiz() {
+            const container = document.getElementById('quiz-container');
+            questions.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.className = 'question-card hover-scale';
+                card.id = `q-card-${index}`;
+                
+                const qText = document.createElement('div');
+                qText.className = 'question-text';
+                qText.innerText = `${index + 1}. ${item.q}`;
+                card.appendChild(qText);
+
+                const grid = document.createElement('div');
+                grid.className = 'options-grid';
+
+                item.options.forEach((opt, optIndex) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'option-btn';
+                    btn.innerText = `${String.fromCharCode(65 + optIndex)}. ${opt}`;
+                    btn.onclick = () => handleAnswer(index, optIndex);
+                    grid.appendChild(btn);
+                });
+
+                card.appendChild(grid);
+                container.appendChild(card);
+            });
+        }
+
+        function handleAnswer(qIdx, selectedIdx) {
+            const card = document.getElementById(`q-card-${qIdx}`);
+            const buttons = card.querySelectorAll('.option-btn');
+            const correctIdx = questions[qIdx].correct;
+
+            buttons.forEach((btn, idx) => {
+                btn.disabled = true;
+                if (idx === correctIdx) {
+                    btn.classList.add('correct');
+                } else if (idx === selectedIdx) {
+                    btn.classList.add('wrong');
+                }
+            });
+        }
+
+        function showTab(tabName) {
+            document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            
+            if (tabName === 'test') {
+                document.getElementById('test-page').classList.add('active');
+                document.querySelectorAll('.tab-btn')[0].classList.add('active');
+            } else {
+                document.getElementById('transcript-page').classList.add('active');
+                document.querySelectorAll('.tab-btn')[1].classList.add('active');
+            }
+            window.scrollTo(0, 0);
+        }
+
+        function adjustZoom(delta) {
+            currentFontSize += delta;
+            if (currentFontSize < 12) currentFontSize = 12;
+            if (currentFontSize > 40) currentFontSize = 40;
+            document.getElementById('main-content').style.fontSize = currentFontSize + 'px';
+        }
+
+        function toggleHeader() {
+            const topBar = document.getElementById('top-bar');
+            const btn = document.querySelector('.toggle-btn');
+            isHeaderHidden = !isHeaderHidden;
+            
+            if (isHeaderHidden) {
+                topBar.classList.add('hidden');
+                btn.innerText = "Show Controls";
+            } else {
+                topBar.classList.remove('hidden');
+                btn.innerText = "Hide Controls";
+            }
+        }
+
+        window.onload = initQuiz;
+    </script>
+</body>
+</html>

@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listening Comprehension Test - Dr. Mazen Badawy</title>
+    <style>
+        /* CSS Reset & Variables */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg-color: #e0f2fe;
+            --primary-blue: #1e3a8a;
+            --success-green: #16a34a;
+            --error-red: #dc2626;
+            --text-black: #000000;
+            --white: #ffffff;
+            --base-font-size: 20px;
+        }
+
+        body {
+            font-family: "Segoe UI", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-black);
+            font-size: var(--base-font-size);
+            line-height: 1.3;
+            padding-bottom: 60px; /* Space for footer */
+            transition: font-size 0.2s ease;
+        }
+
+        /* Layout Components */
+        #top-bar {
+            background-color: var(--primary-blue);
+            color: var(--white);
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        #top-bar.hidden {
+            transform: translateY(-100%);
+        }
+
+        .controls-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        button {
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 16px;
+            font-weight: bold;
+            transition: transform 0.2s ease;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+        }
+
+        .btn-nav {
+            background-color: var(--white);
+            color: var(--primary-blue);
+            text-transform: uppercase;
+            font-size: 0.8em;
+        }
+
+        .btn-zoom {
+            background-color: var(--white);
+            color: var(--primary-blue);
+            width: 40px;
+        }
+
+        #toggle-header {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 1100;
+            background-color: rgba(30, 58, 138, 0.8);
+            color: white;
+            font-size: 12px;
+            padding: 5px 10px;
+        }
+
+        /* Audio Bar */
+        #audio-container {
+            background-color: #f8fafc;
+            border-bottom: 2px solid var(--primary-blue);
+            padding: 10px;
+            position: sticky;
+            top: 0; /* Will align properly when top-bar slides */
+            width: 100%;
+            z-index: 999;
+            display: flex;
+            justify-content: center;
+        }
+
+        audio {
+            width: 100%;
+            max-width: 800px;
+            height: 40px;
+        }
+
+        /* Content Area */
+        .main-container {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 0 15px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Question Cards */
+        .card {
+            background: var(--white);
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease;
+        }
+
+        .card:hover {
+            transform: scale(1.01);
+        }
+
+        .question-text {
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        @media (max-width: 600px) {
+            .options-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .option-btn {
+            text-align: left;
+            padding: 10px;
+            background-color: #f1f5f9;
+            border: 2px solid transparent;
+            color: var(--text-black);
+            font-size: 0.95em;
+        }
+
+        .option-btn:disabled {
+            cursor: default;
+        }
+
+        .correct {
+            background-color: var(--success-green) !important;
+            color: white !important;
+        }
+
+        .wrong {
+            background-color: var(--error-red) !important;
+            color: white !important;
+        }
+
+        /* Transcript Styling */
+        .transcript-box {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            white-space: pre-wrap;
+            line-height: 1.5;
+        }
+
+        .thin-header {
+            font-weight: 200;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 5px;
+        }
+
+        /* Footer */
+        footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background-color: var(--white);
+            color: var(--primary-blue);
+            text-align: center;
+            padding: 10px;
+            font-size: 14px;
+            border-top: 1px solid #cbd5e1;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+
+    <button id="toggle-header" onclick="toggleHeader()">HIDE/SHOW CONTROLS</button>
+
+    <div id="top-bar">
+        <div class="controls-group">
+            <button class="btn-nav" onclick="showTab('test')">Listening Test</button>
+            <button class="btn-nav" onclick="showTab('transcript')">Transcript</button>
+        </div>
+        <div class="controls-group">
+            <span>ZOOM:</span>
+            <button class="btn-zoom" onclick="changeZoom(-2)">-</button>
+            <button class="btn-zoom" onclick="changeZoom(2)">+</button>
+        </div>
+    </div>
+
+    <div id="audio-container">
+        <audio controls src="00.mp3">
+            Your browser does not support the audio element.
+        </audio>
+    </div>
+
+    <div class="main-container">
+        <!-- Test Tab -->
+        <div id="tab-test" class="tab-content active">
+            <h2 class="thin-header">Multiple Choice Questions</h2>
+            <div id="quiz-container">
+                <!-- Questions injected by JS -->
+            </div>
+        </div>
+
+        <!-- Transcript Tab -->
+        <div id="tab-transcript" class="tab-content">
+            <h2 class="thin-header">Audio Transcript</h2>
+            <div class="transcript-box" id="transcript-content">
+                <!-- Transcript injected by JS -->
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        All rights are reserved to Dr. Mazen Badawy – Doctorate of English Teaching & Testing
+    </footer>
+
+    <script>
+        const transcriptData = `Expanded B2 Conversation
+Speaker 1: In our professional development class, we were asked to discuss current events that engineers should follow closely. I believe this topic is extremely relevant because engineering does not exist in isolation from society.
+Speaker 2: I completely agree. Staying informed about current events helps engineers remain aware of emerging technologies, global challenges, and industry trends. It also shows how our technical skills can contribute to solving real-world problems.
+Speaker 1: One of the most pressing issues today is climate change. Engineers have a crucial responsibility in designing systems that reduce greenhouse gas emissions and help communities adapt to environmental changes.
+Speaker 2: That’s absolutely correct. Sustainable energy systems, energy-efficient construction, and pollution-control technologies are practical examples of how engineering addresses climate challenges.
+Speaker 1: Another important topic is artificial intelligence. AI is transforming various sectors, including healthcare, manufacturing, transportation, and communication.
+Speaker 2: Yes, and engineers must ensure that AI systems are developed responsibly. Ethical design, transparency, and safety are essential considerations in this field.
+Speaker 1: Cybersecurity is also becoming increasingly significant. As digital technologies expand, protecting sensitive information has become a top priority.
+Speaker 2: Indeed. Engineers are responsible for creating secure networks, developing encryption techniques, and implementing monitoring systems to prevent cyber threats.
+Speaker 1: When discussing current events, it is important not only to describe them but also to explain their impact on society and industry.
+Speaker 2: Exactly. Understanding the broader consequences of these issues allows engineers to determine which challenges require immediate attention.
+Speaker 1: Furthermore, following current events can inspire innovation. Engineers may identify new opportunities for research and development.
+Speaker 2: Absolutely. Staying informed ensures that engineers remain adaptable, responsible, and prepared to respond effectively to modern challenges.`;
+
+        const questions = [
+            { q: "1. What was the focus of the class discussion?", o: ["Current events relevant to engineers", "Historical engineering achievements", "Financial planning strategies", "Office communication skills"], a: 0 },
+            { q: "2. Why should engineers follow current events?", o: ["To avoid technical work", "To stay informed about trends", "To replace formal education", "To reduce responsibilities"], a: 1 },
+            { q: "3. What major global issue is mentioned first?", o: ["Artificial intelligence", "Cybersecurity", "Climate change", "Space exploration"], a: 2 },
+            { q: "4. What role do engineers play in climate change?", o: ["Increasing industrial production", "Designing emission-reduction solutions", "Promoting fossil fuels", "Ignoring environmental policies"], a: 1 },
+            { q: "5. What is an example of a climate solution?", o: ["Sustainable energy systems", "Traditional power plants", "Increased fuel consumption", "Manual transportation methods"], a: 0 },
+            { q: "6. Which field is transforming many industries?", o: ["Civil construction", "Artificial intelligence", "Mechanical repair", "Paper manufacturing"], a: 1 },
+            { q: "7. What must engineers ensure when developing AI?", o: ["Faster production", "Higher profits", "Ethical and safe design", "Limited transparency"], a: 2 },
+            { q: "8. Why is cybersecurity important?", o: ["It reduces internet use", "It increases digital risks", "It protects data and systems", "It limits communication"], a: 2 },
+            { q: "9. What do engineers create to improve cybersecurity?", o: ["Secure networks", "Social media platforms", "Advertising tools", "Entertainment software"], a: 0 },
+            { q: "10. What is encryption used for?", o: ["Increasing data access", "Protecting sensitive information", "Expanding online advertising", "Reducing storage capacity"], a: 1 },
+            { q: "11. Why should engineers explain the impact of events?", o: ["To impress managers", "To avoid responsibility", "To understand their significance", "To shorten discussions"], a: 2 },
+            { q: "12. What helps engineers prioritize problems?", o: ["Ignoring global issues", "Understanding broader consequences", "Following trends blindly", "Limiting research efforts"], a: 1 },
+            { q: "13. How can current events inspire engineers?", o: ["By reducing innovation", "By creating new project ideas", "By limiting research", "By focusing on old methods"], a: 1 },
+            { q: "14. What quality does staying informed develop?", o: ["Irresponsibility", "Resistance to change", "Lack of awareness", "Adaptability"], a: 3 },
+            { q: "15. Which sectors are influenced by AI?", o: ["Healthcare and transportation", "Agriculture only", "Construction only", "Tourism exclusively"], a: 0 },
+            { q: "16. What is necessary in responsible AI development?", o: ["Ignoring safety", "Ethical considerations", "Reducing transparency", "Limiting innovation"], a: 1 },
+            { q: "17. Why is climate change significant?", o: ["It affects the environment and society", "It concerns engineers only", "It is a temporary issue", "It reduces industrial growth"], a: 0 },
+            { q: "18. What increases the importance of cybersecurity?", o: ["Declining technology use", "Expansion of digital systems", "Reduced internet access", "Limited communication"], a: 1 },
+            { q: "19. What do monitoring systems prevent?", o: ["Data sharing", "Technical innovation", "Cyber threats", "Software development"], a: 2 },
+            { q: "20. Why should engineers remain informed?", o: ["To avoid teamwork", "To reduce creativity", "To respond to modern challenges", "To simplify tasks"], a: 2 },
+            { q: "21. What do sustainable buildings reduce?", o: ["Energy efficiency", "Greenhouse gas emissions", "Innovation", "Digital security"], a: 1 },
+            { q: "22. What connects engineering and society?", o: ["Isolation from global issues", "Practical problem-solving", "Financial marketing", "Historical research"], a: 1 },
+            { q: "23. Why is transparency important in AI?", o: ["It reduces efficiency", "It increases confusion", "It supports responsible use", "It limits innovation"], a: 2 },
+            { q: "24. What is one benefit of following trends?", o: ["Increased ignorance", "Reduced awareness", "Outdated practices", "Innovative thinking"], a: 3 },
+            { q: "25. What does climate adaptation involve?", o: ["Ignoring environmental effects", "Preparing for environmental changes", "Increasing fossil fuel use", "Reducing engineering roles"], a: 1 },
+            { q: "26. What makes engineers responsible professionals?", o: ["Staying informed about events", "Avoiding discussions", "Ignoring social impact", "Limiting technical growth"], a: 0 },
+            { q: "27. What protects digital infrastructure?", o: ["Social networking tools", "Cybersecurity measures", "Marketing strategies", "Manual systems"], a: 1 },
+            { q: "28. Why is AI considered transformative?", o: ["It affects multiple industries", "It reduces automation", "It limits research", "It simplifies manual labor"], a: 0 },
+            { q: "29. What helps engineers decide priorities?", o: ["Personal preferences", "Random choices", "Understanding event impact", "Ignoring global trends"], a: 2 },
+            { q: "30. What is the overall message of the discussion?", o: ["Current events are irrelevant", "Engineers should avoid global issues", "Technology develops independently", "Engineers must stay informed and responsible"], a: 3 }
+        ];
+
+        let currentFontSize = 20;
+
+        function init() {
+            // Render Transcript
+            document.getElementById('transcript-content').textContent = transcriptData;
+
+            // Render Questions
+            const quizContainer = document.getElementById('quiz-container');
+            questions.forEach((item, qIndex) => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                
+                const qText = document.createElement('span');
+                qText.className = 'question-text';
+                qText.textContent = item.q;
+                card.appendChild(qText);
+
+                const optionsGrid = document.createElement('div');
+                optionsGrid.className = 'options-grid';
+
+                item.o.forEach((opt, oIndex) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'option-btn';
+                    btn.textContent = String.fromCharCode(65 + oIndex) + ". " + opt;
+                    btn.onclick = () => handleAnswer(qIndex, oIndex, item.a, optionsGrid);
+                    optionsGrid.appendChild(btn);
+                });
+
+                card.appendChild(optionsGrid);
+                quizContainer.appendChild(card);
+            });
+        }
+
+        function handleAnswer(qIdx, selectedIdx, correctIdx, gridElement) {
+            const buttons = gridElement.querySelectorAll('button');
+            
+            buttons.forEach((btn, idx) => {
+                btn.disabled = true; // Disable all in this question
+                if (idx === correctIdx) {
+                    btn.classList.add('correct');
+                } else if (idx === selectedIdx) {
+                    btn.classList.add('wrong');
+                }
+            });
+        }
+
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.getElementById('tab-' + tabName).classList.add('active');
+        }
+
+        function changeZoom(delta) {
+            currentFontSize += delta;
+            if (currentFontSize < 12) currentFontSize = 12;
+            if (currentFontSize > 40) currentFontSize = 40;
+            document.body.style.fontSize = currentFontSize + 'px';
+        }
+
+        function toggleHeader() {
+            const bar = document.getElementById('top-bar');
+            bar.classList.toggle('hidden');
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>

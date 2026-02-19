@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Engineering Listening Test - Dr. Mazen Badawy</title>
+    <style>
+        :root {
+            --bg-color: #e0f2fe;
+            --primary-blue: #1e3a8a;
+            --success-green: #16a34a;
+            --error-red: #dc2626;
+            --white: #ffffff;
+            --text-dark: #000000;
+            --base-font-size: 20px;
+        }
+
+        * {
+            box-sizing: border-box;
+            transition: transform 0.2s ease;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: "Segoe UI", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            font-size: var(--base-font-size);
+            line-height: 1.3;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            font-weight: bold; /* Applied bold font globally */
+        }
+
+        /* --- Header & Navigation --- */
+        #top-interface {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: var(--white);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        #top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px 15px;
+            background: var(--primary-blue);
+            color: white;
+            overflow: hidden;
+            transition: max-height 0.3s ease, padding 0.3s ease;
+            max-height: 100px;
+        }
+
+        #top-bar.hidden {
+            max-height: 0;
+            padding-top: 0;
+            padding-bottom: 0;
+        }
+
+        .controls-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .tab-btn, .zoom-btn, .toggle-btn {
+            background: var(--white);
+            color: var(--primary-blue);
+            border: none;
+            padding: 6px 12px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 4px;
+            text-transform: uppercase;
+            font-size: 14px;
+        }
+
+        .tab-btn.active {
+            background: var(--success-green);
+            color: white;
+        }
+
+        .toggle-btn {
+            background: #475569;
+            color: white;
+            position: absolute;
+            right: 15px;
+            top: 60px;
+            z-index: 1001;
+            font-size: 12px;
+        }
+
+        /* --- Audio Bar --- */
+        #audio-container {
+            width: 100%;
+            background: #f1f5f9;
+            padding: 10px;
+            border-bottom: 2px solid var(--primary-blue);
+            display: flex;
+            justify-content: center;
+        }
+
+        audio {
+            width: 90%;
+            height: 40px;
+        }
+
+        /* --- Main Content --- */
+        main {
+            flex: 1;
+            padding: 20px;
+            max-width: 900px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .content-section {
+            display: none;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        h1, h2 {
+            font-weight: 200; /* Keeping titles thin as requested earlier */
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        /* --- Transcript Styles --- */
+        #transcript-view {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            white-space: pre-line;
+        }
+
+        /* --- Question Cards --- */
+        .question-card {
+            background: var(--white);
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .question-card:hover {
+            transform: scale(1.02);
+        }
+
+        .question-text {
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .option-btn {
+            text-align: left;
+            padding: 10px;
+            border: 1px solid #e2e8f0;
+            background: #f8fafc;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 0.9em;
+            font-weight: bold; /* Explicitly bold options */
+        }
+
+        .option-btn:hover:not(:disabled) {
+            background: #f1f5f9;
+            border-color: var(--primary-blue);
+        }
+
+        /* MCQ Feedback Colors */
+        .option-btn.correct {
+            background-color: var(--success-green) !important;
+            color: white !important;
+            border-color: var(--success-green);
+        }
+
+        .option-btn.wrong {
+            background-color: var(--error-red) !important;
+            color: white !important;
+            border-color: var(--error-red);
+        }
+
+        .option-btn:disabled {
+            cursor: default;
+            opacity: 0.9;
+        }
+
+        /* --- Footer --- */
+        footer {
+            background: var(--primary-blue);
+            color: white;
+            text-align: center;
+            padding: 15px;
+            font-size: 14px;
+            margin-top: auto;
+            font-weight: normal; /* Footer stays clean */
+        }
+
+        @media (max-width: 600px) {
+            .options-grid {
+                grid-template-columns: 1fr;
+            }
+            .toggle-btn {
+                top: auto;
+                bottom: 80px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="top-interface">
+        <div id="top-bar">
+            <div class="controls-group">
+                <button class="tab-btn active" onclick="showTab('test')">Listening Test</button>
+                <button class="tab-btn" onclick="showTab('transcript')">Transcript</button>
+            </div>
+            <div class="controls-group">
+                <button class="zoom-btn" onclick="adjustZoom(-2)">A-</button>
+                <button class="zoom-btn" onclick="adjustZoom(2)">A+</button>
+            </div>
+        </div>
+        <div id="audio-container">
+            <audio controls>
+                <source src="00.mp3" type="audio/mpeg">
+                Your browser does not support the audio element.
+            </audio>
+        </div>
+    </div>
+
+    <button class="toggle-btn" onclick="toggleHeader()">Hide/Show Controls</button>
+
+    <main id="main-content">
+        <!-- TEST SECTION -->
+        <section id="test-view" class="content-section active">
+            <h1>Listening Test</h1>
+            <div id="questions-container">
+                <!-- Questions injected by JS -->
+            </div>
+        </section>
+
+        <!-- TRANSCRIPT SECTION -->
+        <section id="transcript-view" class="content-section">
+            <h2>Audio Transcript</h2>
+            <div id="transcript-text">
+Speaker 1: Our company meeting today focuses on sharing experiences about interesting engineering projects, so I’d like to talk about that with you in more detail.
+Speaker 2: Sure, I’d be happy to. Engineers are fortunate because they often work on projects that are not only technically challenging but also meaningful to society.
+Speaker 1: I completely agree. I think what makes a project interesting really depends on an engineer’s personal interests, technical strengths, and long-term career goals.
+Speaker 2: That’s true. However, I also believe that the impact of the project matters a lot. If a project benefits society or protects the environment, it becomes even more rewarding.
+Speaker 1: For example, developing renewable energy systems is particularly interesting to me. These projects reduce pollution and help protect natural resources for future generations.
+Speaker 2: That’s an excellent example. In my opinion, designing innovative medical devices is just as fascinating because such technologies can improve patients’ quality of life or even save lives.
+Speaker 1: Another exciting field is sustainable transportation. Electric vehicles and intelligent public transport systems can significantly reduce traffic congestion and carbon emissions.
+Speaker 2: Exactly. These solutions not only improve daily life in cities but also support global environmental goals.
+Speaker 1: I also find educational technology projects very inspiring. Creating digital platforms and smart learning tools can make education more accessible and interactive.
+Speaker 2: Yes, especially in remote areas where traditional resources are limited. Technology can bridge that gap effectively.
+Speaker 1: Space exploration is another area that captures my imagination. Developing spacecraft technologies or satellite systems expands our understanding of the universe.
+Speaker 2: Absolutely. Space projects require advanced engineering skills and international cooperation, which makes them even more impressive.
+Speaker 1: Of course, these interesting projects often involve serious challenges, such as limited budgets, strict deadlines, or complex technical problems.
+Speaker 2: That’s true, but overcoming those challenges strengthens problem-solving skills and professional confidence.
+Speaker 1: I believe the long-term impact of such projects can be enormous, whether in healthcare, transportation, or environmental protection.
+Speaker 2: Exactly. That’s why engineers often feel proud and motivated when they contribute to meaningful projects.
+Speaker 1: What advice would you give to engineers who hope to work on these types of projects in the future?
+Speaker 2: I would advise them to follow their passions, continuously develop new skills, and remain open to learning opportunities. They should also not be afraid of complex challenges.
+Speaker 1: That’s very practical advice. In fact, interesting projects can truly shape an engineer’s professional identity and career direction.
+Speaker 2: Absolutely. They combine creativity, innovation, teamwork, and real-world impact, which makes engineering such a dynamic profession.
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        All rights are reserved to Dr. Mazen Badawy – Doctorate of English Teaching & Testing
+    </footer>
+
+    <script>
+        const questionsData = [
+            { q: "What is the main focus of the company meeting?", o: ["Sharing experiences about engineering projects", "Discussing employee salaries and promotions", "Reviewing annual financial reports", "Planning future marketing campaigns"], a: 0 },
+            { q: "Why are engineers considered fortunate?", o: ["They avoid difficult responsibilities", "They work on meaningful projects", "They earn higher salaries automatically", "They rarely face technical problems"], a: 1 },
+            { q: "What influences whether a project is interesting?", o: ["The company’s location only", "The engineer’s interests and goals", "The length of the project timeline", "The number of employees involved"], a: 1 },
+            { q: "What additional factor makes projects rewarding?", o: ["Their financial profitability", "Their strict deadlines", "Their social or environmental impact", "Their international recognition"], a: 2 },
+            { q: "Which field does Speaker 1 find particularly interesting?", o: ["Renewable energy development", "Financial engineering systems", "Industrial manufacturing processes", "Corporate management software"], a: 0 },
+            { q: "Why are medical device projects fascinating?", o: ["They reduce production costs", "They simplify hospital administration", "They improve or save lives", "They increase company profits"], a: 2 },
+            { q: "What is mentioned as part of sustainable transportation?", o: ["Traditional fuel-powered vehicles", "Electric vehicles and smart transport", "Private taxi expansion systems", "Highway construction projects"], a: 1 },
+            { q: "What is one benefit of sustainable transport systems?", o: ["Increasing traffic congestion", "Expanding fuel consumption", "Raising transportation prices", "Lowering carbon emissions"], a: 3 },
+            { q: "Why is educational technology important?", o: ["It replaces teachers entirely", "It reduces academic standards", "It makes learning more accessible", "It limits classroom interaction"], a: 2 },
+            { q: "How can technology help remote areas?", o: ["By replacing local industries", "By reducing population growth", "By increasing travel opportunities", "By bridging educational gaps"], a: 3 },
+            { q: "Why are space exploration projects inspiring?", o: ["They expand knowledge of the universe", "They eliminate global conflicts", "They reduce national expenses", "They shorten travel distances"], a: 0 },
+            { q: "What makes space projects impressive?", o: ["Simple technical requirements", "Limited cooperation needs", "Advanced skills and collaboration", "Low financial investment"], a: 2 },
+            { q: "What challenge is mentioned in the conversation?", o: ["Excessive free time", "Limited budgets", "Lack of teamwork", "Too many promotions"], a: 1 },
+            { q: "How do challenges benefit engineers?", o: ["They reduce stress levels", "They improve problem-solving skills", "They simplify daily tasks", "They shorten project duration"], a: 1 },
+            { q: "What areas can be positively affected by engineering projects?", o: ["Healthcare and environment", "Fashion and entertainment", "Sports and tourism", "Advertising and media"], a: 0 },
+            { q: "Why do engineers feel proud of such projects?", o: ["They receive immediate rewards", "They avoid responsibility", "They work independently", "They contribute to meaningful change"], a: 3 },
+            { q: "What advice is given to future engineers?", o: ["Focus only on salary", "Avoid complex tasks", "Follow interests and keep learning", "Wait for opportunities passively"], a: 2 },
+            { q: "Why should engineers not fear challenges?", o: ["Challenges help professional growth", "Challenges reduce workload", "Challenges guarantee promotion", "Challenges eliminate competition"], a: 0 },
+            { q: "How can projects shape careers?", o: ["By limiting specialization", "By defining professional identity", "By reducing experience", "By delaying progress"], a: 1 },
+            { q: "What combination makes engineering dynamic?", o: ["Routine and repetition", "Simplicity and isolation", "Competition and profit", "Innovation and real-world impact"], a: 3 },
+            { q: "What reduces pollution according to the dialogue?", o: ["Renewable energy systems", "Increased fuel production", "Traditional power plants", "Paper-based education"], a: 0 },
+            { q: "What improves patients’ quality of life?", o: ["Traffic control systems", "Educational platforms", "Innovative medical devices", "Marketing technologies"], a: 2 },
+            { q: "What reduces traffic congestion?", o: ["Expanding parking areas", "Smart public transport systems", "Increasing private cars", "Limiting road maintenance"], a: 1 },
+            { q: "What helps engineers grow confidently?", o: ["Avoiding teamwork", "Repeating old methods", "Solving complex problems", "Ignoring project risks"], a: 2 },
+            { q: "Why is environmental protection emphasized?", o: ["It increases short-term profits", "It supports future generations", "It simplifies engineering work", "It eliminates global warming instantly"], a: 1 },
+            { q: "What is necessary for space technology projects?", o: ["Basic communication skills only", "Local teamwork exclusively", "Minimal financial resources", "International cooperation"], a: 3 },
+            { q: "What makes projects more rewarding?", o: ["Quick financial returns", "Social and environmental value", "Short project duration", "Limited responsibility"], a: 1 },
+            { q: "What attitude should engineers adopt?", o: ["Openness to learning", "Resistance to change", "Fear of innovation", "Dependence on others"], a: 0 },
+            { q: "What characterizes interesting engineering projects?", o: ["Lack of deadlines", "Simple objectives", "Real-world impact", "Limited teamwork"], a: 2 },
+            { q: "What overall message does the conversation convey?", o: ["Engineering is financially risky", "Projects are mostly stressful", "Innovation should be avoided", "Engineering combines purpose and creativity"], a: 3 }
+        ];
+
+        let currentZoom = 20;
+
+        function initQuestions() {
+            const container = document.getElementById('questions-container');
+            questionsData.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.className = 'question-card';
+                card.innerHTML = `
+                    <span class="question-text">${index + 1}. ${item.q}</span>
+                    <div class="options-grid" id="q${index}-options">
+                        ${item.o.map((opt, i) => `
+                            <button class="option-btn" onclick="checkAnswer(${index}, ${i})">
+                                <strong>${String.fromCharCode(65 + i)}.</strong> ${opt}
+                            </button>
+                        `).join('')}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function checkAnswer(qIdx, selectedIdx) {
+            const optionsDiv = document.getElementById(`q${qIdx}-options`);
+            const buttons = optionsDiv.querySelectorAll('.option-btn');
+            const correctIdx = questionsData[qIdx].a;
+
+            buttons.forEach((btn, i) => {
+                btn.disabled = true;
+                if (i === correctIdx) {
+                    btn.classList.add('correct');
+                } else if (i === selectedIdx) {
+                    btn.classList.add('wrong');
+                }
+            });
+        }
+
+        function showTab(tab) {
+            document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            
+            if (tab === 'test') {
+                document.getElementById('test-view').classList.add('active');
+                document.querySelectorAll('.tab-btn')[0].classList.add('active');
+            } else {
+                document.getElementById('transcript-view').classList.add('active');
+                document.querySelectorAll('.tab-btn')[1].classList.add('active');
+            }
+        }
+
+        function adjustZoom(amount) {
+            currentZoom += amount;
+            if (currentZoom < 12) currentZoom = 12;
+            if (currentZoom > 40) currentZoom = 40;
+            document.getElementById('main-content').style.fontSize = currentZoom + 'px';
+        }
+
+        function toggleHeader() {
+            const topBar = document.getElementById('top-bar');
+            topBar.classList.toggle('hidden');
+        }
+
+        window.onload = initQuestions;
+    </script>
+</body>
+</html>

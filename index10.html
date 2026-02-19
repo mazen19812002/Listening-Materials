@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listening Comprehension Test - Dr. Mazen Badawy</title>
+    <style>
+        /* CSS Reset & Variables */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: "Segoe UI", Arial, sans-serif;
+        }
+
+        :root {
+            --bg-color: #e0f2fe;
+            --card-bg: #ffffff;
+            --primary-blue: #1e3a8a;
+            --success-green: #16a34a;
+            --error-red: #dc2626;
+            --text-main: #000000;
+            --base-font-size: 20px;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-size: var(--base-font-size);
+            line-height: 1.3;
+            min-height: 100vh;
+            padding-bottom: 60px;
+        }
+
+        /* Layout Components */
+        #top-bar {
+            background: var(--primary-blue);
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.3s ease-in-out;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        #top-bar.hidden {
+            transform: translateY(-100%);
+            position: absolute;
+        }
+
+        .controls-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        #audio-bar {
+            background: #f8fafc;
+            border-bottom: 2px solid #cbd5e1;
+            padding: 10px;
+            width: 100%;
+            position: sticky;
+            top: 60px;
+            z-index: 90;
+            transition: top 0.3s ease-in-out;
+        }
+
+        .top-bar-hidden #audio-bar {
+            top: 0;
+        }
+
+        audio {
+            width: 100%;
+            height: 40px;
+        }
+
+        /* UI Elements */
+        button {
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 16px;
+            font-weight: bold;
+            transition: transform 0.2s;
+            text-transform: uppercase;
+            font-size: 0.8em;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+        }
+
+        .btn-nav { background: white; color: var(--primary-blue); }
+        .btn-zoom { background: #334155; color: white; }
+        .btn-toggle { background: #0f172a; color: white; position: fixed; right: 10px; top: 70px; z-index: 110; border: 1px solid white; }
+
+        .content-area {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        h1, h2 {
+            font-weight: 300;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        /* Question Cards */
+        .question-card {
+            background: var(--card-bg);
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+        }
+
+        .question-card:hover {
+            transform: scale(1.01);
+        }
+
+        .question-text {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        @media (max-width: 600px) {
+            .options-grid { grid-template-columns: 1fr; }
+        }
+
+        .option-btn {
+            text-align: left;
+            padding: 10px;
+            background: #f1f5f9;
+            color: black;
+            border: 1px solid #cbd5e1;
+            text-transform: none;
+            font-weight: normal;
+            font-size: 0.95em;
+        }
+
+        .option-btn.correct {
+            background-color: var(--success-green) !important;
+            color: white !important;
+        }
+
+        .option-btn.wrong {
+            background-color: var(--error-red) !important;
+            color: white !important;
+        }
+
+        .option-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.8;
+        }
+
+        .transcript-text {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            white-space: pre-wrap;
+            border: 1px solid #cbd5e1;
+        }
+
+        footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background: #1e293b;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            font-size: 0.7em;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+
+    <button class="btn-toggle" onclick="toggleHeader()">Hide/Show Controls</button>
+
+    <div id="top-bar">
+        <div class="controls-group">
+            <button class="btn-nav" onclick="showTab('test')">Listening Test</button>
+            <button class="btn-nav" onclick="showTab('transcript')">Transcript</button>
+        </div>
+        <div class="controls-group">
+            <span>ZOOM:</span>
+            <button class="btn-zoom" onclick="changeZoom(2)">+</button>
+            <button class="btn-zoom" onclick="changeZoom(-2)">-</button>
+        </div>
+    </div>
+
+    <div id="audio-bar">
+        <audio controls>
+            <source src="00.mp3" type="audio/mpeg">
+            Your browser does not support the audio element.
+        </audio>
+    </div>
+
+    <div class="content-area" id="main-content">
+        <div id="test-tab" class="tab-content active">
+            <h1>Listening Comprehension Test</h1>
+            <div id="questions-container"></div>
+        </div>
+
+        <div id="transcript-tab" class="tab-content">
+            <h1>Conversation Transcript</h1>
+            <div class="transcript-text">
+Speaker 1: Our manager asked us to practice making invitations for company events, so I think we should discuss how to do it properly.
+Speaker 2: Yes, invitations are very important in a professional setting. We need to be clear about essential details, such as date, time, location, and purpose, so everyone knows exactly what to expect.
+Speaker 1: For example, if we’re inviting the team to a project meeting, we could say: “Hi team, I'm inviting you to a meeting on Monday at 10 a.m. to discuss the new project. The meeting will be held in Conference Room B.”
+Speaker 2: That’s perfect. It gives everyone all the necessary information, and the tone is polite and professional. This makes it easier for team members to plan their schedules and prepare for the discussion.
+Speaker 1: If we want to invite a colleague to a conference, we could say: “Hi Sara, I'm inviting you to attend the Global Engineering Conference with me. It's a great opportunity to learn about the latest technologies and trends in our field.”
+Speaker 2: Yes, and we should also be understanding if someone cannot attend. A polite addition could be: “I understand if you’re busy, but I hope you can join.” This shows consideration and respect for their time, which is important for maintaining professional relationships.
+Speaker 1: That makes sense. What about social gatherings in the company, like a team celebration?
+Speaker 2: Social invitations can be more relaxed in tone, but they should still provide clear details. For example: “Hi team, I'm inviting you to a small party at my place this Friday at 7 p.m. It’s just a casual get-together to celebrate our project’s success.”
+Speaker 1: Right. So even casual invitations should include time, place, and reason for the event.
+Speaker 2: Exactly. And we can also add a friendly phrase to show understanding if someone can’t come, like “No worries if you’re busy, we’ll celebrate again next time!” This makes the invitation considerate and inclusive.
+Speaker 1: Sometimes, we might invite multiple people from different departments. How can we make sure everyone feels included?
+Speaker 2: We should address everyone politely, and be clear that the invitation is open to all relevant participants. For example: “Dear all, you are invited to attend the monthly interdepartmental meeting on Thursday at 2 p.m. in Conference Room A. We look forward to your participation.”
+Speaker 1: That’s very professional. Also, using positive language in invitations encourages people to attend and shows enthusiasm about the event.
+Speaker 2: Absolutely. For example, “We’d be delighted if you could join us…” or “It will be a great opportunity to network and share ideas” makes the invitation more appealing.
+Speaker 1: So, the key points are: include clear details, use polite and considerate language, consider the audience, and maintain a professional or friendly tone depending on the event.
+Speaker 2: Yes, and this approach helps build good communication, strengthens team relationships, and fosters a positive atmosphere in the company. Clear and thoughtful invitations can really enhance teamwork and participation.
+Speaker 1: I agree. I think practicing these different types of invitations will help us improve both internal and external communication.
+Speaker 2: Exactly. Whether it’s a formal meeting, a conference, or a social event, knowing how to write or speak a proper invitation is a valuable skill for every engineer.
+Speaker 1: Maybe next, we could practice writing invitations for virtual events, since more companies are hosting online meetings and webinars these days.
+Speaker 2: That’s a great idea. Virtual invitations also need the same clarity, plus a link to the platform and instructions on joining, to avoid confusion.
+Speaker 1: Right. So in summary, invitations—formal or informal, in-person or virtual—require clarity, politeness, professionalism, and consideration for the recipients.
+Speaker 2: Exactly. And mastering this skill will not only improve communication but also help create a positive company culture and encourage participation in all events.
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        All rights are reserved to Dr. Mazen Badawy – Doctorate of English Teaching & Testing
+    </footer>
+
+    <script>
+        const questions = [
+            { q: "What is the main topic of the conversation?", options: ["Making invitations in a company context", "Managing engineering projects efficiently", "Writing technical reports for meetings", "Conducting performance evaluations professionally"], correct: 0 },
+            { q: "Why are invitations important in a professional setting?", options: ["They allow team members to share personal stories", "They communicate clear details and expectations", "They reduce technical responsibilities", "They replace formal meetings entirely"], correct: 1 },
+            { q: "Essential details for an invitation include:", options: ["Historical achievements of the company", "Personal opinions and preferences", "Project deadlines and budgets", "Date, time, location, and purpose"], correct: 3 },
+            { q: "A project meeting invitation should include:", options: ["Names of team members only", "Salary and compensation details", "Location, time, and purpose", "Only the topic of discussion"], correct: 2 },
+            { q: "Why is politeness important in invitations?", options: ["To show authority over team members", "To confuse the participants", "To increase attendance artificially", "To respect recipients’ time and commitments"], correct: 3 },
+            { q: "How can you invite a colleague to a conference politely?", options: ["By explaining the opportunity and showing respect", "By ignoring their availability entirely", "By giving vague and unclear details", "By issuing a strict command to attend"], correct: 0 },
+            { q: "What should you do if someone cannot attend?", options: ["Ask them to attend despite their schedule", "Criticize them for not joining", "Show understanding and consideration", "Ignore their absence completely"], correct: 2 },
+            { q: "A social gathering invitation should be:", options: ["Vague and brief", "Only verbal with no written notice", "Extremely strict and formal", "Friendly, clear, and detailed"], correct: 3 },
+            { q: "The phrase “I hope you can join” shows:", options: ["Authority and insistence on attendance", "Urgency and pressure to participate", "Criticism and dissatisfaction", "Politeness and consideration for others"], correct: 3 },
+            { q: "A clear invitation helps:", options: ["Delay project tasks unnecessarily", "Confuse team members about schedules", "Build good communication and team spirit", "Reduce participation naturally"], correct: 2 },
+            { q: "Invitations should always include:", options: ["Personal stories unrelated to work", "Managerial opinions only", "Technical details only", "Key event information and purpose"], correct: 3 },
+            { q: "Why is clarity in invitations important?", options: ["It avoids misunderstandings and confusion", "It shortens the event duration", "It entertains the participants", "It reduces attendance intentionally"], correct: 0 },
+            { q: "How can a professional tone be achieved in invitations?", options: ["By using informal slang and humor", "By being clear and polite", "By writing vaguely without details", "By adding technical jargon unnecessarily"], correct: 1 },
+            { q: "The example “Hi team, I'm inviting you to a meeting…” demonstrates:", options: ["Casual gossip among colleagues", "A complaint about workload", "A professional and clear invitation", "A strict command to attend"], correct: 2 },
+            { q: "Showing understanding for absences:", options: ["Reduces attendance numbers", "Encourages respect and consideration", "Confuses participants intentionally", "Replaces scheduling entirely"], correct: 1 },
+            { q: "Friendly invitations are suitable for:", options: ["Writing technical reports", "Urgent financial discussions", "Formal board meetings only", "Social gatherings and celebrations"], correct: 3 },
+            { q: "A proper invitation improves:", options: ["Team communication and cohesion", "Individual isolation in the workplace", "Personal opinions unrelated to work", "Competition among colleagues"], correct: 0 },
+            { q: "Key phrases in invitations include:", options: ["Technical jargon only", "Polite expressions and event details", "Commanding and forceful words", "Vague and ambiguous phrases"], correct: 1 },
+            { q: "Invitations to conferences should emphasize:", options: ["Company financial reports", "Opportunities for learning and development", "Entertainment and games", "Personal benefits exclusively"], correct: 1 },
+            { q: "A casual social invitation example includes:", options: ["Formal business terms only", "Detailed technical instructions", "Time, place, and friendly tone", "Project deadlines only"], correct: 2 },
+            { q: "Why is it important to mention the purpose of an event?", options: ["To clarify why attendance is relevant", "To entertain participants randomly", "To confuse the team members", "To reduce the number of attendees"], correct: 0 },
+            { q: "Good invitations foster:", options: ["Miscommunication intentionally", "Personal competition among members", "Understanding, cooperation, and respect", "Team conflict and misunderstanding"], correct: 2 },
+            { q: "What type of language should invitations use?", options: ["Ambiguous and vague", "Technical and overly complex", "Aggressive and demanding", "Clear, polite, and professional"], correct: 3 },
+            { q: "Including clear details in invitations helps:", options: ["Ensure participants know when and where to attend", "Create uncertainty about the event", "Delay preparation unnecessarily", "Increase confusion among attendees"], correct: 0 },
+            { q: "Positive language in invitations:", options: ["Encourages attendance and engagement", "Discourages participation subtly", "Reduces interest in the event", "Confuses recipients intentionally"], correct: 0 },
+            { q: "Multiple-department invitations should:", options: ["Be addressed politely to all relevant participants", "Mention only one department", "Include informal jokes only", "Focus on unrelated topics"], correct: 0 },
+            { q: "Including a link in virtual invitations:", options: ["Reduces participation", "Ensures participants can join easily online", "Is optional and rarely needed", "Makes the event confusing"], correct: 1 },
+            { q: "Invitations for company events should consider:", options: ["Ignoring schedules entirely", "Recipients’ availability and comfort", "Only the sender’s convenience", "Personal preferences of the manager only"], correct: 1 },
+            { q: "Clear and thoughtful invitations:", options: ["Build trust and encourage teamwork", "Increase misunderstandings", "Discourage attendance", "Reduce productivity"], correct: 0 },
+            { q: "The overall message of the discussion is that invitations must be:", options: ["Technical, complex, and detailed only", "Strict, forceful, and commanding", "Clear, polite, and considerate of recipients", "Informal and casual for all occasions"], correct: 2 }
+        ];
+
+        let currentFontSize = 20;
+
+        function renderQuestions() {
+            const container = document.getElementById('questions-container');
+            questions.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.className = 'question-card';
+                card.id = `q-card-${index}`;
+
+                const qText = document.createElement('div');
+                qText.className = 'question-text';
+                qText.innerText = `${index + 1}. ${item.q}`;
+                card.appendChild(qText);
+
+                const optionsDiv = document.createElement('div');
+                optionsDiv.className = 'options-grid';
+
+                item.options.forEach((opt, optIndex) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'option-btn';
+                    const letter = String.fromCharCode(65 + optIndex);
+                    btn.innerText = `${letter}. ${opt}`;
+                    btn.onclick = () => handleAnswer(index, optIndex, btn);
+                    optionsDiv.appendChild(btn);
+                });
+
+                card.appendChild(optionsDiv);
+                container.appendChild(card);
+            });
+        }
+
+        function handleAnswer(qIdx, selectedIdx, btn) {
+            const card = document.getElementById(`q-card-${qIdx}`);
+            const buttons = card.querySelectorAll('.option-btn');
+            const correctIdx = questions[qIdx].correct;
+
+            buttons.forEach((b, i) => {
+                b.disabled = true; 
+                if (i === correctIdx) {
+                    b.classList.add('correct');
+                } else if (i === selectedIdx) {
+                    b.classList.add('wrong');
+                }
+            });
+        }
+
+        function showTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.getElementById(tabId + '-tab').classList.add('active');
+        }
+
+        function changeZoom(delta) {
+            currentFontSize += delta;
+            if (currentFontSize < 12) currentFontSize = 12;
+            if (currentFontSize > 40) currentFontSize = 40;
+            document.getElementById('main-content').style.fontSize = currentFontSize + 'px';
+        }
+
+        function toggleHeader() {
+            const topBar = document.getElementById('top-bar');
+            document.body.classList.toggle('top-bar-hidden');
+            topBar.classList.toggle('hidden');
+        }
+
+        window.onload = renderQuestions;
+    </script>
+</body>
+</html>

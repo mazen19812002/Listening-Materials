@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listening Comprehension Test - Dr. Mazen Badawy</title>
+    <style>
+        /* Base Reset & Variables */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+
+        body {
+            background-color: #e0f2fe;
+            color: #000;
+            line-height: 1.3;
+            padding-bottom: 80px; /* Space for footer */
+            min-height: 100vh;
+        }
+
+        /* Layout Components */
+        #top-interface {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            transition: transform 0.3s ease-in-out;
+            background: #fff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        #top-interface.hidden {
+            transform: translateY(-100%);
+        }
+
+        .top-bar {
+            background: #1e3a8a; /* Dark Blue */
+            color: white;
+            padding: 5px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 5px;
+        }
+
+        .tab-btn {
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: white;
+            padding: 8px 15px;
+            cursor: pointer;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 14px;
+        }
+
+        .tab-btn.active {
+            background: #fff;
+            color: #1e3a8a;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .zoom-btn {
+            background: #fff;
+            color: #1e3a8a;
+            border: none;
+            padding: 5px 12px;
+            cursor: pointer;
+            font-weight: bold;
+            border-radius: 4px;
+        }
+
+        /* Audio Bar */
+        #floating-audio-bar {
+            position: sticky;
+            top: 0;
+            width: 100%;
+            background: #f8fafc;
+            padding: 10px;
+            border-bottom: 2px solid #1e3a8a;
+            z-index: 999;
+            display: flex;
+            justify-content: center;
+        }
+
+        audio {
+            width: 100%;
+            max-width: 800px;
+            height: 35px;
+        }
+
+        /* Toggle Button */
+        #toggle-controls {
+            position: fixed;
+            right: 20px;
+            bottom: 80px;
+            z-index: 1100;
+            background: #1e3a8a;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        /* Content Areas */
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 0 15px;
+            font-size: 20px; /* Base Zoom */
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* Question Cards */
+        h1, h2 {
+            font-weight: 200;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .question-card {
+            background: white;
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease;
+        }
+
+        .question-card:hover {
+            transform: scale(1.01);
+        }
+
+        .question-text {
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        @media (max-width: 600px) {
+            .options-grid { grid-template-columns: 1fr; }
+        }
+
+        .option-btn {
+            text-align: left;
+            padding: 10px;
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background 0.2s;
+        }
+
+        .option-btn:hover:not([disabled]) {
+            background: #e2e8f0;
+        }
+
+        /* Feedback States */
+        .option-btn.correct {
+            background: #16a34a !important;
+            color: white !important;
+            border-color: #15803d !important;
+        }
+
+        .option-btn.wrong {
+            background: #dc2626 !important;
+            color: white !important;
+            border-color: #991b1b !important;
+        }
+
+        .option-btn[disabled] {
+            cursor: default;
+        }
+
+        /* Transcript Style */
+        .transcript-content {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            white-space: pre-line;
+            line-height: 1.5;
+        }
+
+        /* Footer */
+        footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: #1e3a8a;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            font-size: 14px;
+            border-top: 3px solid #16a34a;
+            z-index: 1001;
+        }
+
+        /* Utility */
+        .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+    </style>
+</head>
+<body>
+
+    <!-- Top Interface (Hideable) -->
+    <div id="top-interface">
+        <div class="top-bar">
+            <div class="tabs">
+                <button class="tab-btn active" onclick="showTab('test')">Listening Test</button>
+                <button class="tab-btn" onclick="showTab('transcript')">Transcript</button>
+            </div>
+            <div class="controls">
+                <span style="font-size: 12px; font-weight: bold;">ZOOM:</span>
+                <button class="zoom-btn" onclick="adjustZoom(-2)">A-</button>
+                <button class="zoom-btn" onclick="adjustZoom(2)">A+</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Audio Bar (Always Visible at top of viewport) -->
+    <div id="floating-audio-bar">
+        <audio controls id="audio-player">
+            <source src="00.mp3" type="audio/mpeg">
+            Your browser does not support the audio element.
+        </audio>
+    </div>
+
+    <button id="toggle-controls" onclick="toggleHeader()">HIDE CONTROLS</button>
+
+    <div class="container" id="main-content">
+        
+        <!-- Test Page -->
+        <div id="test-page" class="page active">
+            <h1>Listening Comprehension</h1>
+            <div id="questions-container">
+                <!-- Questions injected by JS -->
+            </div>
+        </div>
+
+        <!-- Transcript Page -->
+        <div id="transcript-page" class="page">
+            <h1>Transcript</h1>
+            <div class="transcript-content" id="transcript-text">
+                Speaker 1: In our recent leadership training session, we were asked to discuss how engineers evaluate the performance of others. I believe this is a very important topic, especially for those who aim to become team leaders or project managers.
+                
+                Speaker 2: Absolutely. Performance evaluation is a fundamental leadership skill. Engineers who supervise teams must know how to assess their colleagues fairly in order to identify strengths, address weaknesses, and make decisions about promotions or rewards.
+                
+                Speaker 1: That’s true. So, where do you think we should begin when evaluating someone’s performance?
+                
+                Speaker 2: I think the first factor to consider is the quality of work. Engineers are expected to meet deadlines, produce accurate and reliable results, and maintain high professional standards.
+                
+                Speaker 1: I agree. Consistency is also important. Delivering good results once is not enough; performance should be stable over time.
+                
+                Speaker 2: Exactly. In addition, technical competence plays a major role. Engineers should stay updated with modern technologies and know how to apply them effectively in real projects.
+                
+                Speaker 1: Yes, especially in fast-changing industries where innovation is constant. Continuous learning shows commitment and professionalism.
+                
+                Speaker 2: Communication skills are equally essential. Engineers must be able to explain their ideas clearly to both technical and non-technical audiences.
+                
+                Speaker 1: That’s a good point. Collaboration is also critical, since most engineering projects require teamwork. A successful engineer contributes positively to group efforts.
+                
+                Speaker 2: Leadership and problem-solving abilities are another important area, particularly for senior engineers. They should guide their teams, motivate members, and handle complex challenges efficiently.
+                
+                Speaker 1: True. However, when evaluating performance, leaders must remain fair and objective. Personal preferences or biases should never influence decisions.
+                
+                Speaker 2: I completely agree. Evaluations should be based on measurable results and actual contributions rather than personal relationships.
+                
+                Speaker 1: Moreover, constructive feedback is essential. The purpose of evaluation is not only to judge but also to support improvement and professional growth.
+                
+                Speaker 2: Exactly. When carried out properly, performance evaluations enhance team efficiency, encourage accountability, and help individuals develop their potential.
+                
+                Speaker 1: So, in summary, effective evaluation requires attention to quality, skills, teamwork, leadership, and fairness.
+                
+                Speaker 2: Yes, it’s about being objective, balanced, and focused on both competence and outcomes.
+            </div>
+        </div>
+
+    </div>
+
+    <footer>
+        All rights are reserved to Dr. Mazen Badawy – Doctorate of English Teaching & Testing
+    </footer>
+
+    <script>
+        const questions = [
+            { q: "1. What was the topic of the leadership training session?", o: ["Evaluating team performance", "Planning marketing strategies", "Increasing company profits", "Designing new software systems"], a: 0 },
+            { q: "2. Why is performance evaluation important for leaders?", o: ["It reduces employee salaries", "It identifies strengths and weaknesses", "It eliminates the need for teamwork", "It replaces technical training"], a: 1 },
+            { q: "3. What is the first factor mentioned in evaluation?", o: ["Personal relationships", "Salary expectations", "Quality of work", "Office attendance rules"], a: 2 },
+            { q: "4. What is expected regarding deadlines?", o: ["They can be ignored occasionally", "They should be met consistently", "They are optional for senior staff", "They depend on personal comfort"], a: 1 },
+            { q: "5. Why is consistency important?", o: ["It shows stable performance over time", "It reduces project complexity", "It increases working hours", "It guarantees promotion automatically"], a: 0 },
+            { q: "6. What role does technical competence play?", o: ["It replaces teamwork skills", "It ensures effective application of knowledge", "It eliminates communication needs", "It reduces responsibility levels"], a: 1 },
+            { q: "7. Why must engineers stay updated?", o: ["To compete socially", "To avoid teamwork", "To adapt to technological changes", "To increase vacation days"], a: 2 },
+            { q: "8. What is essential for explaining ideas clearly?", o: ["Financial knowledge", "Communication skills", "Marketing strategies", "Administrative authority"], a: 1 },
+            { q: "9. Why is collaboration critical?", o: ["Projects require teamwork", "Projects avoid deadlines", "Projects need fewer employees", "Projects eliminate leadership"], a: 0 },
+            { q: "10. Which skill is especially important for senior engineers?", o: ["Basic technical training", "Leadership and problem-solving", "Office decoration planning", "Financial auditing skills"], a: 1 },
+            { q: "11. Why should leaders motivate their teams?", o: ["To reduce accountability", "To avoid evaluation", "To handle challenges efficiently", "To limit communication"], a: 2 },
+            { q: "12. What should not influence evaluation decisions?", o: ["Measurable results", "Documented contributions", "Professional standards", "Personal biases"], a: 3 },
+            { q: "13. What should evaluations focus on?", o: ["Personal friendships", "Social background", "Actual performance", "Office popularity"], a: 2 },
+            { q: "14. What is the purpose of constructive feedback?", o: ["To criticize employees publicly", "To support improvement", "To shorten evaluation time", "To compare salaries"], a: 1 },
+            { q: "15. What happens when evaluations are done properly?", o: ["Team efficiency improves", "Projects become easier", "Deadlines disappear", "Leadership becomes unnecessary"], a: 0 },
+            { q: "16. What does accountability encourage?", o: ["Irregular performance", "Reduced effort", "Responsible behavior", "Personal favoritism"], a: 2 },
+            { q: "17. What is necessary for fair evaluation?", o: ["Emotional decision-making", "Objective judgment", "Personal loyalty", "Informal opinions"], a: 1 },
+            { q: "18. Why are measurable results important?", o: ["They prevent collaboration", "They simplify leadership", "They provide clear evidence", "They reduce technical skills"], a: 2 },
+            { q: "19. What shows commitment to the profession?", o: ["Ignoring updates", "Avoiding new tools", "Continuous learning", "Reducing work effort"], a: 2 },
+            { q: "20. What helps engineers explain ideas to non-technical audiences?", o: ["Advanced coding skills", "Clear communication", "Financial planning", "Administrative control"], a: 1 },
+            { q: "21. Why must leaders be balanced?", o: ["To avoid conflict", "To maintain fairness", "To reduce responsibility", "To limit evaluations"], a: 1 },
+            { q: "22. What contributes positively to group efforts?", o: ["Independent isolation", "Team cooperation", "Personal competition", "Minimal participation"], a: 1 },
+            { q: "23. Why are professional standards important?", o: ["They reduce productivity", "They create confusion", "They ensure quality outcomes", "They limit innovation"], a: 2 },
+            { q: "24. What should evaluation avoid?", o: ["Evidence-based criteria", "Clear performance indicators", "Documented achievements", "Biased judgments"], a: 3 },
+            { q: "25. What strengthens leadership evaluation skills?", o: ["Ignoring weaknesses", "Observing actual results", "Avoiding communication", "Depending on rumors"], a: 1 },
+            { q: "26. Why should engineers handle complex challenges?", o: ["To demonstrate capability", "To reduce teamwork", "To delay projects", "To avoid evaluation"], a: 0 },
+            { q: "27. What improves individual growth?", o: ["Fair performance reviews", "Personal favoritism", "Limited feedback", "Ignoring outcomes"], a: 0 },
+            { q: "28. What ensures objective evaluation?", o: ["Emotional reactions", "Documented contributions", "Informal discussions", "Personal friendships"], a: 1 },
+            { q: "29. What is a sign of effective leadership?", o: ["Avoiding feedback", "Ignoring deadlines", "Supporting team development", "Focusing only on authority"], a: 2 },
+            { q: "30. What is the overall message of the discussion?", o: ["Evaluation is unnecessary", "Skills are less important than relationships", "Results matter more than fairness", "Fair and skill-based evaluation is essential"], a: 3 }
+        ];
+
+        let currentZoom = 20;
+
+        function init() {
+            const container = document.getElementById('questions-container');
+            questions.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.className = 'question-card';
+                card.innerHTML = `
+                    <span class="question-text">${item.q}</span>
+                    <div class="options-grid" id="q-grid-${index}">
+                        ${item.o.map((opt, i) => `
+                            <button class="option-btn" onclick="handleAnswer(${index}, ${i})">
+                                <strong>${String.fromCharCode(65 + i)}.</strong> ${opt}
+                            </button>
+                        `).join('')}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function handleAnswer(questionIdx, selectedIdx) {
+            const correctIdx = questions[questionIdx].a;
+            const grid = document.getElementById(`q-grid-${questionIdx}`);
+            const buttons = grid.querySelectorAll('.option-btn');
+
+            buttons.forEach((btn, i) => {
+                btn.disabled = true; // Disable single attempt
+                if (i === correctIdx) {
+                    btn.classList.add('correct');
+                } else if (i === selectedIdx) {
+                    btn.classList.add('wrong');
+                }
+            });
+        }
+
+        function showTab(tab) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            
+            if(tab === 'test') {
+                document.getElementById('test-page').classList.add('active');
+                document.querySelector('.tab-btn:nth-child(1)').classList.add('active');
+            } else {
+                document.getElementById('transcript-page').classList.add('active');
+                document.querySelector('.tab-btn:nth-child(2)').classList.add('active');
+            }
+            window.scrollTo(0,0);
+        }
+
+        function adjustZoom(delta) {
+            currentZoom += delta;
+            if (currentZoom < 12) currentZoom = 12;
+            if (currentZoom > 40) currentZoom = 40;
+            document.getElementById('main-content').style.fontSize = currentZoom + 'px';
+        }
+
+        function toggleHeader() {
+            const header = document.getElementById('top-interface');
+            const btn = document.getElementById('toggle-controls');
+            if (header.classList.contains('hidden')) {
+                header.classList.remove('hidden');
+                btn.innerText = "HIDE CONTROLS";
+            } else {
+                header.classList.add('hidden');
+                btn.innerText = "SHOW CONTROLS";
+            }
+        }
+
+        // Initialize questions on load
+        window.onload = init;
+    </script>
+</body>
+</html>

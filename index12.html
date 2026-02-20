@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listening Comprehension Test - Dr. Mazen Badawy</title>
+    <style>
+        /* CSS Reset & Variable Setup */
+        :root {
+            --bg-color: #e0f2fe;
+            --primary-blue: #1e3a8a;
+            --success-green: #16a34a;
+            --error-red: #dc2626;
+            --white: #ffffff;
+            --text-black: #000000;
+            --base-font-size: 20px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: "Segoe UI", Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-black);
+            font-size: var(--base-font-size);
+            line-height: 1.3;
+            padding-bottom: 80px; /* Space for footer */
+        }
+
+        /* Header & Navigation */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: var(--white);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        #top-bar-container {
+            transition: transform 0.3s ease-in-out, height 0.3s ease-in-out, opacity 0.3s ease-in-out;
+            overflow: hidden;
+            height: 45px;
+        }
+
+        #top-bar-container.hidden {
+            height: 0;
+            transform: translateY(-100%);
+            opacity: 0;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px 20px;
+            background: var(--primary-blue);
+            color: white;
+            height: 45px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+        }
+
+        .tab-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 5px 15px;
+            cursor: pointer;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.8em;
+            letter-spacing: 1px;
+            border-radius: 4px;
+        }
+
+        .tab-btn.active {
+            background: var(--white);
+            color: var(--primary-blue);
+        }
+
+        .controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-right: 120px; /* Space for the toggle button */
+        }
+
+        .control-btn {
+            background: var(--white);
+            color: var(--primary-blue);
+            border: none;
+            width: 30px;
+            height: 30px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        /* Floating Audio Bar */
+        #audio-container {
+            width: 100%;
+            background: #f8fafc;
+            padding: 10px 20px;
+            border-bottom: 2px solid var(--primary-blue);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            z-index: 1001; /* Ensure it stays above content */
+        }
+
+        #audio-container audio {
+            width: 100%;
+            max-width: 800px;
+            height: 35px;
+        }
+
+        /* Toggle Button - Fixed to be always reachable */
+        #toggle-header {
+            position: fixed;
+            right: 20px;
+            top: 7px;
+            z-index: 1100;
+            background: var(--primary-blue);
+            color: white;
+            border: 1px solid white;
+            padding: 5px 12px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: bold;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        /* Content Areas */
+        .content-wrapper {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 0 15px;
+            transition: font-size 0.2s;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Transcript Styling */
+        .transcript-box {
+            background: var(--white);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            white-space: pre-line;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        /* Question Cards */
+        .question-card {
+            background: var(--white);
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .question-card:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+            border-color: var(--primary-blue);
+        }
+
+        .question-text {
+            font-weight: bold;
+            margin-bottom: 8px;
+            border-bottom: 1px solid #f1f5f9;
+            padding-bottom: 5px;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+
+        @media (max-width: 600px) {
+            .options-grid { grid-template-columns: 1fr; }
+        }
+
+        .option-btn {
+            text-align: left;
+            padding: 8px 12px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.2s;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            background: #e2e8f0;
+            border-color: var(--primary-blue);
+        }
+
+        .option-btn:disabled {
+            cursor: default;
+        }
+
+        .option-btn.correct {
+            background: var(--success-green) !important;
+            color: white !important;
+            border-color: #14532d !important;
+        }
+
+        .option-btn.wrong {
+            background: var(--error-red) !important;
+            color: white !important;
+            border-color: #7f1d1d !important;
+        }
+
+        /* Utility Classes */
+        .thin-header {
+            font-weight: 300;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.1em;
+            color: var(--primary-blue);
+        }
+
+        /* Footer */
+        footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: var(--primary-blue);
+            color: white;
+            text-align: center;
+            padding: 12px;
+            font-size: 13px;
+            z-index: 1000;
+            border-top: 2px solid rgba(255,255,255,0.1);
+        }
+    </style>
+</head>
+<body>
+
+    <button id="toggle-header" onclick="toggleHeader()">HIDE CONTROLS</button>
+
+    <header>
+        <div id="top-bar-container">
+            <div class="top-bar">
+                <div class="tabs">
+                    <button class="tab-btn active" onclick="switchTab('test', this)">Listening Test</button>
+                    <button class="tab-btn" onclick="switchTab('transcript', this)">Transcript</button>
+                </div>
+                <div class="controls">
+                    <span style="font-size: 12px; font-weight: bold;">ZOOM:</span>
+                    <button class="control-btn" onclick="adjustZoom(-2)">-</button>
+                    <button class="control-btn" onclick="adjustZoom(2)">+</button>
+                </div>
+            </div>
+        </div>
+        <div id="audio-container">
+            <audio controls>
+                <source src="00.mp3" type="audio/mpeg">
+                Your browser does not support the audio element.
+            </audio>
+        </div>
+    </header>
+
+    <div class="content-wrapper" id="main-content">
+        <!-- TEST TAB -->
+        <div id="test-content" class="tab-content active">
+            <h2 class="thin-header">Multiple Choice Questions</h2>
+            <div id="quiz-container">
+                <!-- Questions injected by JS -->
+            </div>
+        </div>
+
+        <!-- TRANSCRIPT TAB -->
+        <div id="transcript-content" class="tab-content">
+            <h2 class="thin-header">Audio Transcript</h2>
+            <div class="transcript-box">
+Speaker 1: During our last cross-functional meeting, there was clear tension between the software and hardware teams about the final system requirements. The discussion became quite intense.
+
+Speaker 2: Yes, I noticed that. Conflicts are common in engineering projects, especially when teams are working under pressure and facing strict deadlines.
+
+Speaker 1: I believe the first step in handling such situations is staying calm and professional. When emotions take control, the focus shifts away from solving the problem.
+
+Speaker 2: I completely agree. Maintaining a respectful tone, even when others are frustrated, helps de-escalate the situation and keeps communication constructive.
+
+Speaker 1: Another important skill is active listening. Instead of interrupting or defending our own ideas immediately, we should try to understand the reasoning behind the other team’s perspective.
+
+Speaker 2: Exactly. Sometimes disagreements happen because each team is prioritizing different objectives. The hardware team might focus on cost and feasibility, while the software team emphasizes flexibility and scalability.
+
+Speaker 1: That’s true. When we look closely, both teams often share the same ultimate goal—delivering a high-quality and reliable product to the client.
+
+Speaker 2: Identifying that shared goal helps us find common ground. Once everyone agrees on the main objective, discussions become more collaborative rather than competitive.
+
+Speaker 1: In the meeting, I suggested that we list our common priorities on the board. That shifted the atmosphere from confrontation to cooperation.
+
+Speaker 2: That was a smart move. Visualizing shared goals reminds everyone that we are working toward the same outcome.
+
+Speaker 1: After that, we began exploring compromise solutions. For example, the software team agreed to optimize certain features to reduce hardware demands.
+
+Speaker 2: And in return, the hardware team proposed upgrading a key component slightly to maintain overall performance. That balanced approach benefited both sides.
+
+Speaker 1: I also think it’s important to separate the issue from the individuals involved. Disagreements should focus on technical matters, not personal criticism.
+
+Speaker 2: Absolutely. When conflicts become personal, they damage trust and long-term collaboration.
+
+Speaker 1: After the meeting, I arranged a short follow-up session to ensure everyone felt heard and respected.
+
+Speaker 2: That kind of follow-up strengthens team relationships. It shows that resolving the conflict is just as important as completing the project.
+
+Speaker 1: In future situations, we might even establish clear communication guidelines for meetings to prevent escalation.
+
+Speaker 2: Good idea. Setting ground rules—such as allowing each person to speak without interruption—can reduce misunderstandings.
+
+Speaker 1: So overall, effective conflict management involves staying calm, listening actively, identifying shared goals, proposing compromise solutions, setting communication norms, and maintaining professional relationships.
+
+Speaker 2: Exactly. Engineers who manage disagreements constructively not only solve problems faster but also build stronger, more cooperative teams.
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        All rights are reserved to Dr. Mazen Badawy – Doctorate of English Teaching & Testing
+    </footer>
+
+    <script>
+        // Data Configuration
+        const questions = [
+            { q: "What caused tension in the meeting?", options: ["Disagreement about final system requirements", "Lack of technical knowledge", "Budget approval delays", "Office relocation plans"], correct: 0 },
+            { q: "Why are conflicts common in engineering projects?", options: ["Engineers dislike collaboration", "Projects often involve pressure and deadlines", "Teams avoid communication", "Managers encourage competition"], correct: 1 },
+            { q: "What is the first step in handling conflict effectively?", options: ["Presenting stronger arguments immediately", "Requesting management intervention", "Staying calm and professional", "Ending the discussion quickly"], correct: 2 },
+            { q: "Why is maintaining a respectful tone important?", options: ["It increases technical complexity", "It prevents project cancellation", "It improves hardware efficiency", "It helps de-escalate tense situations"], correct: 3 },
+            { q: "What does active listening require?", options: ["Interrupting less and understanding reasons", "Defending personal opinions quickly", "Ignoring opposing viewpoints", "Focusing only on deadlines"], correct: 0 },
+            { q: "The hardware team was mainly concerned about:", options: ["Software flexibility", "Cost and feasibility", "Client satisfaction", "Marketing strategy"], correct: 1 },
+            { q: "The software team prioritized:", options: ["Financial accounting systems", "Office communication tools", "Flexibility and scalability", "Equipment maintenance plans"], correct: 2 },
+            { q: "What is usually the shared goal of both teams?", options: ["Increasing internal competition", "Delivering a reliable product", "Reducing team size", "Changing leadership roles"], correct: 1 },
+            { q: "Identifying shared goals encourages:", options: ["Competitive behavior", "Personal criticism", "Technical confusion", "Collaborative discussion"], correct: 3 },
+            { q: "Writing common priorities on the board helped to:", options: ["Shift the atmosphere toward cooperation", "Increase disagreement intensity", "Extend meeting duration", "Avoid technical evaluation"], correct: 0 },
+            { q: "A compromise solution means:", options: ["One team completely wins", "Both teams adapt for better outcomes", "The project is delayed indefinitely", "Technical standards are lowered"], correct: 1 },
+            { q: "The software team agreed to:", options: ["Remove all features entirely", "Reduce hardware investment", "Optimize features to lower demands", "Change project leadership"], correct: 2 },
+            { q: "The hardware team proposed:", options: ["Canceling system development", "Ignoring software suggestions", "Postponing final decisions", "Upgrading a key component slightly"], correct: 3 },
+            { q: "Why should problems be separated from people?", options: ["To shorten meeting discussions", "To avoid personal conflicts", "To eliminate accountability", "To reduce technical analysis"], correct: 1 },
+            { q: "Personal conflicts may damage:", options: ["Budget approvals", "Technical innovation", "Trust and collaboration", "Project documentation"], correct: 2 },
+            { q: "Follow-up communication helps to:", options: ["Increase project cost", "Strengthen team relationships", "Replace leadership decisions", "Remove shared objectives"], correct: 1 },
+            { q: "Establishing communication guidelines can:", options: ["Prevent misunderstandings", "Delay project progress", "Reduce technical accuracy", "Encourage interruptions"], correct: 0 },
+            { q: "Allowing each person to speak without interruption:", options: ["Limits discussion quality", "Causes project delays", "Supports respectful dialogue", "Eliminate disagreement"], correct: 2 },
+            { q: "Staying calm during conflict helps to:", options: ["Intensify emotional reactions", "Focus on solving the issue", "Avoid responsibility", "End meetings quickly"], correct: 1 },
+            { q: "Competitive discussions usually occur when:", options: ["Shared goals are unclear", "Teams communicate openly", "Compromises are accepted", "Cooperation is prioritized"], correct: 0 },
+            { q: "Visualizing goals during meetings helps teams to:", options: ["Increase rivalry", "Identify budget problems", "Align their objectives", "Avoid responsibility"], correct: 2 },
+            { q: "Compromise does NOT mean:", options: ["Adjusting certain expectations", "Seeking balanced outcomes", "Giving up entirely", "Working toward shared success"], correct: 2 },
+            { q: "Engineers who manage conflict well tend to:", options: ["Strengthen teamwork", "Avoid collaboration", "Delay decisions", "Increase tension"], correct: 0 },
+            { q: "Listening to different perspectives helps uncover:", options: ["Personal weaknesses", "Hidden technical errors", "Office management problems", "Root causes of disagreement"], correct: 3 },
+            { q: "Respectful communication mainly supports:", options: ["Higher competition", "Long-term cooperation", "Short-term advantage", "Individual recognition"], correct: 1 },
+            { q: "Follow-up meetings demonstrate:", options: ["Professional responsibility", "Lack of preparation", "Project uncertainty", "Weak leadership"], correct: 0 },
+            { q: "Conflict becomes harmful when it:", options: ["Focuses on technical solutions", "Encourages collaboration", "Becomes personal and emotional", "Identifies shared objectives"], correct: 2 },
+            { q: "Collaborative solutions benefit:", options: ["Only one department", "Both teams involved", "External competitors", "Unrelated stakeholders"], correct: 1 },
+            { q: "Engineers under pressure may experience:", options: ["Fewer disagreements", "Improved communication", "Reduced accountability", "Increased tension"], correct: 3 },
+            { q: "Effective conflict management includes all EXCEPT:", options: ["Active listening", "Finding common ground", "Maintaining relationships", "Ignoring opposing viewpoints"], correct: 3 }
+        ];
+
+        let currentZoom = 20;
+
+        // Initialization
+        window.onload = () => {
+            renderQuestions();
+        };
+
+        function renderQuestions() {
+            const container = document.getElementById('quiz-container');
+            questions.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.className = 'question-card';
+                card.id = `q-card-${index}`;
+
+                let optionsHTML = '';
+                item.options.forEach((opt, optIndex) => {
+                    const letter = String.fromCharCode(65 + optIndex);
+                    optionsHTML += `
+                        <button class="option-btn" 
+                                onclick="handleAnswer(${index}, ${optIndex})" 
+                                data-q="${index}" 
+                                data-opt="${optIndex}">
+                            ${letter}. ${opt}
+                        </button>
+                    `;
+                });
+
+                card.innerHTML = `
+                    <div class="question-text">${index + 1}. ${item.q}</div>
+                    <div class="options-grid">${optionsHTML}</div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function handleAnswer(qIdx, selectedIdx) {
+            const correctIdx = questions[qIdx].correct;
+            const card = document.getElementById(`q-card-${qIdx}`);
+            const buttons = card.querySelectorAll('.option-btn');
+
+            buttons.forEach((btn, idx) => {
+                btn.disabled = true;
+                if (idx === correctIdx) {
+                    btn.classList.add('correct');
+                }
+                if (idx === selectedIdx && idx !== correctIdx) {
+                    btn.classList.add('wrong');
+                }
+            });
+        }
+
+        function switchTab(tab, btn) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById(`${tab}-content`).classList.add('active');
+            btn.classList.add('active');
+        }
+
+        function toggleHeader() {
+            const topBar = document.getElementById('top-bar-container');
+            const toggleBtn = document.getElementById('toggle-header');
+            const isHidden = topBar.classList.toggle('hidden');
+            
+            if (isHidden) {
+                toggleBtn.innerText = "SHOW CONTROLS";
+            } else {
+                toggleBtn.innerText = "HIDE CONTROLS";
+            }
+        }
+
+        function adjustZoom(delta) {
+            currentZoom += delta;
+            if (currentZoom < 14) currentZoom = 14;
+            if (currentZoom > 40) currentZoom = 40;
+            document.getElementById('main-content').style.fontSize = currentZoom + 'px';
+        }
+    </script>
+</body>
+</html>

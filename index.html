@@ -25,14 +25,14 @@
         /* Container & Layout */
         .container {
             width: 100%;
-            max-width: 900px;
+            max-width: 1000px;
             padding: 40px 20px;
             text-align: center;
             flex: 1;
         }
 
         h1 {
-            font-weight: 100; /* Thin Title for clarity */
+            font-weight: 100; /* Thin Title */
             text-transform: uppercase;
             letter-spacing: 8px;
             margin-bottom: 50px;
@@ -43,8 +43,8 @@
         /* Buttons Grid */
         .links-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 25px;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
             margin-top: 20px;
         }
 
@@ -56,12 +56,12 @@
             background-color: #16a34a; /* Green for Accept/Execute */
             color: white;
             text-decoration: none;
-            padding: 30px 20px;
+            padding: 25px 15px;
             border-radius: 15px;
-            font-size: 1.4rem;
+            font-size: 1.3rem;
             font-weight: bold;
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.2s, box-shadow 0.2s;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.2s, box-shadow 0.2s;
             border: 3px solid rgba(255, 255, 255, 0.2);
         }
 
@@ -69,13 +69,13 @@
         .link-button:hover {
             transform: scale(1.08); /* Grows/Zooms in slightly */
             background-color: #15803d;
-            box-shadow: 0 12px 20px rgba(0, 0, 0, 0.25);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
             border-color: #ffffff;
         }
 
         .link-button span {
             display: block;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             font-weight: normal;
             margin-top: 8px;
             opacity: 0.9;
@@ -88,10 +88,10 @@
             background-color: #ffffff;
             color: #1e3a8a;
             text-align: center;
-            padding: 20px;
+            padding: 25px;
             font-size: 1rem;
             width: 100%;
-            border-top: 3px solid #1e3a8a;
+            border-top: 4px solid #1e3a8a;
             font-weight: bold;
             margin-top: auto;
         }
@@ -115,6 +115,17 @@
         <h1>Listening Materials</h1>
         
         <div class="links-grid">
+            <!-- Added Test 01 and 02 -->
+            <a href="https://mazen19812002.github.io/Listening-Materials/index1.html" class="link-button">
+                Listening Test 01
+                <span>Begin Assessment</span>
+            </a>
+            <a href="https://mazen19812002.github.io/Listening-Materials/index2.html" class="link-button">
+                Listening Test 02
+                <span>Begin Assessment</span>
+            </a>
+            
+            <!-- Existing Tests 03 to 11 -->
             <a href="https://mazen19812002.github.io/Listening-Materials/index3.html" class="link-button">
                 Listening Test 03
                 <span>Begin Assessment</span>
@@ -149,6 +160,12 @@
             </a>
             <a href="https://mazen19812002.github.io/Listening-Materials/index11.html" class="link-button">
                 Listening Test 11
+                <span>Begin Assessment</span>
+            </a>
+
+            <!-- Added Test 12 -->
+            <a href="https://mazen19812002.github.io/Listening-Materials/index12.html" class="link-button">
+                Listening Test 12
                 <span>Begin Assessment</span>
             </a>
         </div>
